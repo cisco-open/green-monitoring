@@ -1,11 +1,11 @@
-# Open-source green monitoring stack
+# Green Monitoring Stack
 
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
 
 
 ## Table of contents
 
-- [Open-source green monitoring stack](#open-source-green-monitoring-stack)
+- [Green Monitoring Stack](#green-monitoring-stack)
   - [Table of contents](#table-of-contents)
   - [About the project](#about-the-project)
     - [KPIs](#kpis)
