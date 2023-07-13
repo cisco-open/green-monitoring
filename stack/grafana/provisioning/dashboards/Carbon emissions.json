@@ -1,0 +1,1174 @@
+{
+  "_comment": "Copyright (c) 2022 Cisco and/or its affiliates. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0. Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. AUTHOR(s): Cristina Precup <cprecup@cisco.com> CONTRIBUTOR(s): Patrice Nivaggioli <pnivaggi@cisco.com>, Steven Barth <stbarth@cisco.com>",
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 34,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 207,
+      "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Nexus 3K, 92xx, 93xx",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "${__field.labels.__values}",
+          "mappings": [],
+          "max": 800,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 150
+              },
+              {
+                "color": "orange",
+                "value": 300
+              },
+              {
+                "color": "red",
+                "value": 500
+              },
+              {
+                "color": "dark-red",
+                "value": 700
+              }
+            ]
+          },
+          "unit": "massg"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 43,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "id": 240,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {
+          "valueSize": 20
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "src = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  r._measurement == \"show environment power\" and\n  r._field == \"powersup/power_summary/tot_pow_input_actual_draw\"\n  )\n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  \t  r._measurement == \"electricity-map\" and\n      r._field == \"carbonIntensity\")\n  |> drop(columns: [\"_measurement\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\"],\n\t)\n  |> map(fn: (r) => ({\n  r with\n    region: r.region_t1,\n    country: r.country_t1,\n    _value: r._value_t2,\n    _time: r._time_t1\n  }))\n|> keep(columns: [\"_value\", \"_time\", \"cc\", \"source\", \"subscription\", \"_measurement\"])\n|> group()\n|> sort(columns: [\"_time\"], desc: true)\n|> unique(column: \"source\")\n|> sort(columns: [\"source\"], desc: true)\n|> pivot(rowKey:[\"_time\"], columnKey: [\"source\", \"cc\"], valueColumn: \"_value\")\n|> yield()",
+          "refId": "Dynamic measurements - Regional carbon emissions - sorted"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "src = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"apic-switch\")\n  |> filter(fn: (r) => r[\"_field\"] == \"pIn\")\n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  \t  r._measurement == \"electricity-map\" and\n      r._field == \"carbonIntensity\")\n  |> drop(columns: [\"_measurement\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\"],\n\t)\n  |> map(fn: (r) => ({\n  r with\n    region: r.region_t1,\n    country: r.country_t1,\n    _value: r._value_t2,\n    _time: r._time_t1\n}))\n  |> keep(columns: [\"_value\", \"_time\", \"cc\", \"name\", \"subscription\", \"_measurement\"])\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"name\")\n  |> sort(columns: [\"name\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"name\", \"cc\"], valueColumn: \"_value\")\n \t|> yield()",
+          "refId": "APIC - Special case: 93xx GX2B"
+        }
+      ],
+      "title": "Regional C emissions [g CO2 eq / kWh]",
+      "transformations": [],
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "//Carbon emission (extrapolated to 1h)\n\n//Gives us the carbon emissions per hour (W x gCO₂eq/kWh = (J/s) x gCO2eq / kWh = (J/s) x gCO2eq / (1000Wh) = (J/s) x gCO2eq / (3600x1000J) = JxgCO2eq/(3600sx1000J) = gCO2eq/(3600sx1000) = gCO2eq/1000h)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "${__field.labels.__values}",
+          "mappings": [],
+          "max": 800,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 150
+              },
+              {
+                "color": "orange",
+                "value": 300
+              },
+              {
+                "color": "red",
+                "value": 500
+              },
+              {
+                "color": "dark-red",
+                "value": 700
+              }
+            ]
+          },
+          "unit": "massg"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 43,
+        "w": 5,
+        "x": 4,
+        "y": 1
+      },
+      "id": 242,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "//Carbon emission (extrapolated to 1h)\n\n//Gives us the carbon emissions per hour (W x gCO₂eq/kWh = (J/s) x gCO2eq / kWh = (J/s) x gCO2eq / (1000Wh) = (J/s) x gCO2eq / (3600x1000J) = JxgCO2eq/(3600sx1000J) = gCO2eq/(3600sx1000) = gCO2eq/1000h)\n\nsrc = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  r._measurement == \"show environment power\" and\n  r._field == \"powersup/power_summary/tot_pow_input_actual_draw\"\n    )\n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  \t  r._measurement == \"electricity-map\" and\n      r._field == \"carbonIntensity\")\n  |> drop(columns: [\"_measurement\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\"],\n\t)\n  |> map(fn: (r) => ({\n  r with\n    //system_power_input: r._value_t1,\n    //carbonIntensity: r._value_t2,\n    region: r.region_t1,\n    country: r.country_t1,\n    _value: float(v: r._value_t1) * float(v: r._value_t2) / 1000.0,\n    _time: r._time_t1\n  }))\n  |> keep(columns: [\"_value\", \"_time\", \"cc\", \"source\", \"subscription\", \"_measurement\"])\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\", \"cc\"], valueColumn: \"_value\")\n  |> yield()",
+          "refId": "Dynamic measures - Total carbon emissions - sorted"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "//Carbon emission (extrapolated to 1h)\n\n//Gives us the carbon emissions per hour (W x gCO₂eq/kWh = (J/s) x gCO2eq / kWh = (J/s) x gCO2eq / (1000Wh) = (J/s) x gCO2eq / (3600x1000J) = JxgCO2eq/(3600sx1000J) = gCO2eq/(3600sx1000) = gCO2eq/1000h)\n\nsrc = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"apic-switch\")\n  |> filter(fn: (r) => r[\"_field\"] == \"pIn\")\n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  \t  r._measurement == \"electricity-map\" and\n      r._field == \"carbonIntensity\")\n  |> drop(columns: [\"_measurement\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\"],\n\t)\n  |> map(fn: (r) => ({\n  r with\n    region: r.region_t1,\n    country: r.country_t1,\n    _value: float(v: r._value_t1) * float(v: r._value_t2) / 1000.0,\n    _time: r._time_t1\n  }))\n  |> keep(columns: [\"_value\", \"_time\", \"cc\", \"name\", \"subscription\", \"_measurement\"])\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"name\")\n  |> sort(columns: [\"name\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"name\", \"cc\"], valueColumn: \"_value\")\n  |> yield()",
+          "refId": "APIC - Special case: 93xx GX2B"
+        }
+      ],
+      "title": "Current C emissions / h [g CO2 eq / h]",
+      "transformations": [],
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 44
+      },
+      "id": 214,
+      "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "NCS5xx, NCS5xxx",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 800,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "#EAB839",
+                "value": 150
+              },
+              {
+                "color": "orange",
+                "value": 300
+              },
+              {
+                "color": "red",
+                "value": 500
+              },
+              {
+                "color": "dark-red",
+                "value": 700
+              }
+            ]
+          },
+          "unit": "massg"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 42,
+        "w": 4,
+        "x": 0,
+        "y": 45
+      },
+      "id": 244,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {
+          "valueSize": 30
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "src_ncs5xx_and_ncs5xxx = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"Cisco-IOS-XR-sysadmin-fretta-envmon-ui:environment/oper/power/location/pem_attributes\" and\n    r._field == \"system_power_input\"\n  )\n\nsrc_ncs5xxL = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r.device_type != \"cisco-8k\" and\n  \tr._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/chassis\" and\n    r._field == \"total_pwr_output\"\n  )\n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  \t  r._measurement == \"electricity-map\" and\n      r._field == \"carbonIntensity\")\n  |> drop(columns: [\"_measurement\"])\n\nj1 = join(\n\ttables: {t1: src_ncs5xx_and_ncs5xxx, t2: co2eqkwh},\n    on: [\"cc\"],\n\t)\n  |> map(fn: (r) => ({\n  r with\n    //system_power_input: r._value_t1,\n    //carbonIntensity: r._value_t2,\n    region: r.region_t1,\n    country: r.country_t1,\n    _value: r._value_t2,\n    _time: r._time_t1\n  }))\n  |> keep(columns: [\"_value\", \"_time\", \"cc\", \"source\", \"subscription\", \"_measurement\"])\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\", \"cc\"], valueColumn: \"_value\")\n\nj2 = join(\n\ttables: {t1: src_ncs5xxL, t2: co2eqkwh},\n    on: [\"cc\"],\n\t)\n  |> map(fn: (r) => ({\n  r with\n    region: r.region_t1,\n    country: r.country_t1,\n    _value: r._value_t2,\n    _time: r._time_t1\n  }))\n  |> keep(columns: [\"_value\", \"_time\", \"cc\", \"source\", \"subscription\", \"_measurement\"])\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\", \"cc\"], valueColumn: \"_value\")\n\nresult = union(tables: [j1, j2])\n  |> yield()",
+          "refId": "Dynamic measurements - Regional carbon emissions - sorted"
+        }
+      ],
+      "title": "Regional C emissions [g CO2 eq / kWh]",
+      "transformations": [],
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "//Carbon emission (extrapolated to 1h)\n\n//Gives us the carbon emissions per hour (W x gCO₂eq/kWh = (J/s) x gCO2eq / kWh = (J/s) x gCO2eq / (1000Wh) = (J/s) x gCO2eq / (3600x1000J) = JxgCO2eq/(3600sx1000J) = gCO2eq/(3600sx1000) = gCO2eq/1000h)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 800,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "#EAB839",
+                "value": 150
+              },
+              {
+                "color": "orange",
+                "value": 300
+              },
+              {
+                "color": "red",
+                "value": 500
+              },
+              {
+                "color": "dark-red",
+                "value": 700
+              }
+            ]
+          },
+          "unit": "massg"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 42,
+        "w": 5,
+        "x": 4,
+        "y": 45
+      },
+      "id": 246,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "//Carbon emission (extrapolated to 1h)\n\n//Gives us the carbon emissions per hour (W x gCO₂eq/kWh = (J/s) x gCO2eq / kWh = (J/s) x gCO2eq / (1000Wh) = (J/s) x gCO2eq / (3600x1000J) = JxgCO2eq/(3600sx1000J) = gCO2eq/(3600sx1000) = gCO2eq/1000h)\n\nsrc_ncs5xx_and_ncs5xxx = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"Cisco-IOS-XR-sysadmin-fretta-envmon-ui:environment/oper/power/location/pem_attributes\" and\n    r._field == \"system_power_input\"\n  )\n\nsrc_ncs5xxL = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r.device_type != \"cisco-8k\" and\n  \tr._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/chassis\" and\n    r._field == \"total_pwr_output\"\n  )\n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  \t  r._measurement == \"electricity-map\" and\n      r._field == \"carbonIntensity\")\n  |> drop(columns: [\"_measurement\"])\n\nj1 = join(\n\ttables: {t1: src_ncs5xx_and_ncs5xxx, t2: co2eqkwh},\n    on: [\"cc\"],\n\t)\n  |> map(fn: (r) => ({\n  r with\n    //system_power_input: r._value_t1,\n    //carbonIntensity: r._value_t2,\n    region: r.region_t1,\n    country: r.country_t1,\n    _value: float(v: r._value_t1) * float(v: r._value_t2) / 1000.0,\n    _time: r._time_t1\n  }))\n  |> keep(columns: [\"_value\", \"_time\", \"cc\", \"source\", \"subscription\", \"_measurement\"])\n  \n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\", \"cc\"], valueColumn: \"_value\")\n\nj2 = join(\n\ttables: {t1: src_ncs5xxL, t2: co2eqkwh},\n    on: [\"cc\"],\n\t)\n  |> map(fn: (r) => ({\n  r with\n    region: r.region_t1,\n    country: r.country_t1,\n    _value: float(v: r._value_t1) * float(v: r._value_t2) / 1000.0,\n    _time: r._time_t1\n  }))\n  |> keep(columns: [\"_value\", \"_time\", \"cc\", \"source\", \"subscription\", \"_measurement\"])\n  \n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\", \"cc\"], valueColumn: \"_value\")\n\nresult = union(tables: [j1, j2])\n  |> yield()",
+          "refId": "Dynamic measures - Total carbon emissions - sorted"
+        }
+      ],
+      "title": "Current C emissions / h [g CO2 eq / h]",
+      "transformations": [],
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 87
+      },
+      "id": 4,
+      "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "ASR 9K",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 800,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "#EAB839",
+                "value": 150
+              },
+              {
+                "color": "orange",
+                "value": 300
+              },
+              {
+                "color": "red",
+                "value": 500
+              },
+              {
+                "color": "dark-red",
+                "value": 700
+              }
+            ]
+          },
+          "unit": "massg"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 22,
+        "w": 4,
+        "x": 0,
+        "y": 88
+      },
+      "id": 248,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {
+          "valueSize": 30
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "src = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  r._measurement == \"Cisco-IOS-XR-sysadmin-asr9k-envmon-ui:environment/oper/power/location/pem_attributes\" and\n  r._field == \"system_power_input\")\n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  \t  r._measurement == \"electricity-map\" and\n      r._field == \"carbonIntensity\")\n  |> drop(columns: [\"_measurement\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\"],\n\t)\n  |> map(fn: (r) => ({\n  r with\n    region: r.region_t1,\n    country: r.country_t1,\n    _value: r._value_t2,\n    _time: r._time_t1\n  }))\n  |> keep(columns: [\"_value\", \"_time\", \"cc\", \"source\", \"subscription\", \"_measurement\"])\n  \n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\", \"cc\"], valueColumn: \"_value\")\n  |> yield()",
+          "refId": "Dynamic measurements - Regional carbon emissions - sorted"
+        }
+      ],
+      "title": "Regional C emissions [g CO2 eq / kWh]",
+      "transformations": [],
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 800,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "#EAB839",
+                "value": 150
+              },
+              {
+                "color": "orange",
+                "value": 300
+              },
+              {
+                "color": "red",
+                "value": 500
+              },
+              {
+                "color": "dark-red",
+                "value": 700
+              }
+            ]
+          },
+          "unit": "massg"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 22,
+        "w": 5,
+        "x": 4,
+        "y": 88
+      },
+      "id": 250,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "src = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  r._measurement == \"Cisco-IOS-XR-sysadmin-asr9k-envmon-ui:environment/oper/power/location/pem_attributes\" and\n  r._field == \"system_power_input\")\n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  \t  r._measurement == \"electricity-map\" and\n      r._field == \"carbonIntensity\")\n  |> drop(columns: [\"_measurement\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\"],\n\t)\n  |> map(fn: (r) => ({\n  r with\n    region: r.region_t1,\n    country: r.country_t1,\n    _value: float(v: r._value_t1) * float(v: r._value_t2) / 1000.0,\n    _time: r._time_t1\n  }))\n  |> keep(columns: [\"_value\", \"_time\", \"cc\", \"source\", \"subscription\", \"_measurement\"])\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\", \"cc\"], valueColumn: \"_value\")\n  |> yield()",
+          "refId": "Dynamic measurements - Total carbon emissions - sorted"
+        }
+      ],
+      "title": "Current C emissions / h [g CO2 eq / h]",
+      "transformations": [],
+      "type": "stat"
+    },
+    {
+      "collapsed": true,
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 110
+      },
+      "id": 221,
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "max": 800,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 150
+                  },
+                  {
+                    "color": "orange",
+                    "value": 300
+                  },
+                  {
+                    "color": "red",
+                    "value": 500
+                  },
+                  {
+                    "color": "dark-red",
+                    "value": 700
+                  }
+                ]
+              },
+              "unit": "massg"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 4,
+            "x": 0,
+            "y": 4
+          },
+          "id": 229,
+          "options": {
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": false,
+            "text": {
+              "valueSize": 30
+            }
+          },
+          "pluginVersion": "9.2.0",
+          "repeatDirection": "v",
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "INFLUXDB2B082CADEA38E"
+              },
+              "hide": false,
+              "query": "src = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"asr9k_power\" and r._field == \"current1\")\n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  \t  r._measurement == \"electricity-map\" and\n      r._field == \"carbonIntensity\")\n  |> drop(columns: [\"_measurement\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\"],\n\t)\n    |> map(fn: (r) => ({\n    r with\n    \tregion: r.region_t1,\n    \tcountry: r.country_t1,\n      _value: r._value_t2,\n    \t_time: r._time_t1\n\t}))\n\n    |> keep(columns: [\"_value\", \"_time\", \"cc\", \"source\", \"subscription\", \"_measurement\"])\n    \n    // For sorting data (replaces |>last())\n    |> group()\n    |> sort(columns: [\"_time\"], desc: true)\n    |> unique(column: \"source\")\n    |> sort(columns: [\"source\"], desc: false)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"source\", \"cc\"], valueColumn: \"_value\")\n  \t|> yield()",
+              "refId": "Dynamic measurements"
+            }
+          ],
+          "title": "Regional C emissions [g CO2 eq / kWh]",
+          "transformations": [],
+          "type": "gauge"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "max": 800,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 150
+                  },
+                  {
+                    "color": "orange",
+                    "value": 300
+                  },
+                  {
+                    "color": "red",
+                    "value": 500
+                  },
+                  {
+                    "color": "dark-red",
+                    "value": 700
+                  }
+                ]
+              },
+              "unit": "massg"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 5,
+            "x": 4,
+            "y": 4
+          },
+          "id": 231,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.2.0",
+          "repeatDirection": "v",
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "INFLUXDB2B082CADEA38E"
+              },
+              "hide": false,
+              "query": "src = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"asr9k_power\")\n  |> sort(columns: [\"_time\", \"source\"], desc: true)\n  |> unique(column: \"source\")\n  |> pivot(columnKey: [\"_field\"], rowKey: [\"source\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({r with _value: (r.voltage1 * r.current1 + r.voltage2 * r.current2) / 1000000}))\n  |> keep(columns: [\"_time\", \"_value\", \"source\", \"cc\"])\n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  \t  r._measurement == \"electricity-map\" and\n      r._field == \"carbonIntensity\")\n  |> drop(columns: [\"_measurement\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\"],\n\t)\n    |> map(fn: (r) => ({\n    r with\n    \tregion: r.region_t1,\n    \tcountry: r.country_t1,\n      \" \": float(v: r._value_t1) * float(v: r._value_t2) / 1000.0,\n    \t_time: r._time_t1\n\t}))\n    // For sorting data (replaces |>last())\n    |> sort(columns: [\"_time\"], desc: true)\n    |> unique(column: \"source\")\n    |> sort(columns: [\"source\"], desc: false)\n    |> keep(columns: [\" \", \"source\"])\n  \t|> yield()",
+              "refId": "Dynamic measurements - Total carbon emissions"
+            }
+          ],
+          "title": "Current C emissions / h [g CO2 eq / h]",
+          "transformations": [],
+          "type": "stat"
+        }
+      ],
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "ASR 9K (32-bit)",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 111
+      },
+      "id": 34,
+      "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "C8K",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "${__field.labels}",
+          "mappings": [],
+          "max": 804,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "#EAB839",
+                "value": 150
+              },
+              {
+                "color": "orange",
+                "value": 300
+              },
+              {
+                "color": "red",
+                "value": 500
+              },
+              {
+                "color": "dark-red",
+                "value": 700
+              }
+            ]
+          },
+          "unit": "massg"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 4,
+        "x": 0,
+        "y": 112
+      },
+      "id": 252,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {
+          "valueSize": 30
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "src = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n    r.device_type == \"cisco-8k\" and\n    r._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/producers/producer-nodes/producer-node\" and \n    (\n    r._field == \"pem_info_array/current_in_a\" or\n    r._field == \"pem_info_array/voltage_in_a\" or \n    r._field == \"pem_info_array/current_in_b\" or\n    r._field == \"pem_info_array/voltage_in_b\"\n    ))\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> rename(columns: {\"pem_info_array/voltage_in_a\": \"voltage_in_a\", \"pem_info_array/current_in_a\": \"current_in_a\", \"pem_info_array/voltage_in_b\": \"voltage_in_b\", \"pem_info_array/current_in_b\": \"current_in_b\"})\n  |> map(fn: (r) => ({\n    r with\n    power_in_a: (float(v: r.voltage_in_a)/1000.0) * (float(v: r.current_in_a)/1000.0),\n    power_in_b: (float(v: r.voltage_in_b)/1000.0) * (float(v: r.current_in_b)/1000.0),\n   }))\n  |> map(fn: (r) => ({\n    r with\n    in_power: r.power_in_a + r.power_in_b,\n  }))\n  |> last(column: \"in_power\")\n  |> keep(columns: [\"_time\", \"in_power\", \"_field\", \"_value\", \"source\", \"cc\"])\n  |> sum(column: \"in_power\")\n  |> map(fn: (r) => ({\n    r with\n    _value: r.in_power,\n  }))\n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  \t  r._measurement == \"electricity-map\" and\n      r._field == \"carbonIntensity\")\n  |> drop(columns: [\"_measurement\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\"],\n\t)\n  |> map(fn: (r) => ({\n  r with\n    _value: r._value_t2,\n    _time: r._time_t1\n  }))\n  |> keep(columns: [\"_value\", \"_time\", \"cc\", \"source\", \"subscription\", \"_measurement\"])\n  \n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: false)\n  |> pivot(rowKey:[], columnKey: [\"source\", \"cc\"], valueColumn: \"_value\")\n  |> yield()\n    \n    ",
+          "refId": "Dynamic measurements - Regional Carbon emissions - sorted"
+        }
+      ],
+      "title": "Regional C emissions [g CO2 eq / kWh]",
+      "transformations": [],
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "//Carbon emission (extrapolated to 1h)\n\n//Gives us the carbon emissions per hour (W x gCO₂eq/kWh = (J/s) x gCO2eq / kWh = (J/s) x gCO2eq / (1000Wh) = (J/s) x gCO2eq / (3600x1000J) = JxgCO2eq/(3600sx1000J) = gCO2eq/(3600sx1000) = gCO2eq/1000h)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "${__field.labels}",
+          "mappings": [],
+          "max": 800,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "#EAB839",
+                "value": 150
+              },
+              {
+                "color": "orange",
+                "value": 300
+              },
+              {
+                "color": "red",
+                "value": 500
+              },
+              {
+                "color": "dark-red",
+                "value": 700
+              }
+            ]
+          },
+          "unit": "massg"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 5,
+        "x": 4,
+        "y": 112
+      },
+      "id": 254,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "//Carbon emission (extrapolated to 1h)\n\n//Gives us the carbon emissions per hour (W x gCO₂eq/kWh = (J/s) x gCO2eq / kWh = (J/s) x gCO2eq / (1000Wh) = (J/s) x gCO2eq / (3600x1000J) = JxgCO2eq/(3600sx1000J) = gCO2eq/(3600sx1000) = gCO2eq/1000h)\n\nsrc = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n    r.device_type == \"cisco-8k\" and\n    r._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/producers/producer-nodes/producer-node\" and \n    (\n    r._field == \"pem_info_array/current_in_a\" or\n    r._field == \"pem_info_array/voltage_in_a\" or \n    r._field == \"pem_info_array/current_in_b\" or\n    r._field == \"pem_info_array/voltage_in_b\"\n    ))\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> rename(columns: {\"pem_info_array/voltage_in_a\": \"voltage_in_a\", \"pem_info_array/current_in_a\": \"current_in_a\", \"pem_info_array/voltage_in_b\": \"voltage_in_b\", \"pem_info_array/current_in_b\": \"current_in_b\"})\n  |> map(fn: (r) => ({\n    r with\n    power_in_a: if float(v: r.current_in_a) > 100 then (float(v: r.voltage_in_a)/1000.0) * (float(v: r.current_in_a)/1000.0) else (float(v: r.voltage_in_a)) * (float(v: r.current_in_a)),\n    power_in_b: if float(v: r.current_in_b) > 100 then (float(v: r.voltage_in_b)/1000.0) * (float(v: r.current_in_b)/1000.0) else (float(v: r.voltage_in_b)) * (float(v: r.current_in_b)),\n   }))\n  |> map(fn: (r) => ({\n    r with\n    in_power: r.power_in_a + r.power_in_b,\n  }))\n  |> last(column: \"in_power\")\n  |> keep(columns: [\"_time\", \"in_power\", \"_field\", \"_value\", \"source\", \"cc\"])\n  |> sum(column: \"in_power\")\n  |> map(fn: (r) => ({\n    r with\n    _value: r.in_power,\n  }))\n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"electricity-map\" and\n    r._field == \"carbonIntensity\")\n  |> drop(columns: [\"_measurement\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\"],\n\t)\n  |> map(fn: (r) => ({\n  r with\n    _value: float(v:r._value_t1) * float(v:r._value_t2) / 1000.0,\n    _time: r._time_t1\n  }))\n  |> keep(columns: [\"_value\", \"_time\", \"cc\", \"source\", \"subscription\", \"_measurement\"])\n  \n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: false)\n  |> pivot(rowKey:[], columnKey: [\"source\", \"cc\"], valueColumn: \"_value\")\n  |> yield()\n    ",
+          "refId": "Dynamic measurements - Total Carbon emissions per hour - sorted"
+        }
+      ],
+      "title": "Current C emissions / h [g CO2 eq / h]",
+      "transformations": [],
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 124
+      },
+      "id": 233,
+      "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "ASR 9xx (IOS XE)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 800,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "#EAB839",
+                "value": 150
+              },
+              {
+                "color": "orange",
+                "value": 300
+              },
+              {
+                "color": "red",
+                "value": 500
+              },
+              {
+                "color": "dark-red",
+                "value": 700
+              }
+            ]
+          },
+          "unit": "massg"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 0,
+        "y": 125
+      },
+      "id": 237,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {
+          "valueSize": 30
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "src = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XE-environment-oper:environment-sensors/environment-sensor\" and r._field == \"current_reading\" and r.name == \"PEM Iout\" and r.location == \"P0\")\n  |> unique(column: \"source\")\n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  \t  r._measurement == \"electricity-map\" and\n      r._field == \"carbonIntensity\")\n  |> drop(columns: [\"_measurement\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\"],\n\t)\n    |> map(fn: (r) => ({\n    r with\n    \tregion: r.region_t1,\n    \tcountry: r.country_t1,\n      _value: r._value_t2,\n    \t_time: r._time_t1\n\t}))\n    |> keep(columns: [\"_value\", \"_time\", \"cc\", \"source\", \"subscription\", \"_measurement\"])\n    \n    // For sorting data (replaces |>last())\n    |> group()\n    |> sort(columns: [\"_time\"], desc: true)\n    |> unique(column: \"source\")\n    |> sort(columns: [\"source\"], desc: false)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"source\", \"cc\"], valueColumn: \"_value\")\n  \t|> yield()",
+          "refId": "Dynamic measurements - Regional carbon emissions - sorted"
+        }
+      ],
+      "title": "Regional C emissions [g CO2 eq / kWh]",
+      "transformations": [],
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 800,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "#EAB839",
+                "value": 150
+              },
+              {
+                "color": "orange",
+                "value": 300
+              },
+              {
+                "color": "red",
+                "value": 500
+              },
+              {
+                "color": "dark-red",
+                "value": 700
+              }
+            ]
+          },
+          "unit": "massg"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 5,
+        "x": 4,
+        "y": 125
+      },
+      "id": 238,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "src = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XE-environment-oper:environment-sensors/environment-sensor\" and r._field == \"current_reading\" and (r.name == \"PEM Iout\" or r.name == \"PEM Vout\"))\n  |> sort(columns: [\"_time\", \"source\"], desc: true)\n  |> unique(column: \"source\")\n  |> pivot(columnKey: [\"name\"], rowKey: [\"source\", \"location\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({r with _value: (r[\"PEM Iout\"] * r[\"PEM Vout\"])}))\n  |> group(columns: [\"source\", \"cc\"])\n  |> sum(column: \"_value\")\n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n  \t  r._measurement == \"electricity-map\" and\n      r._field == \"carbonIntensity\")\n  |> drop(columns: [\"_measurement\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\"],\n\t)\n    |> map(fn: (r) => ({\n    r with\n    \tregion: r.region_t1,\n    \tcountry: r.country_t1,\n      \" \": float(v: r._value_t1) * float(v: r._value_t2) / 1000.0,\n    \t_time: r._time_t1\n\t}))\n    // For sorting data (replaces |>last())\n    |> sort(columns: [\"_time\"], desc: true)\n    |> unique(column: \"source\")\n    |> sort(columns: [\"source\"], desc: false)\n    |> keep(columns: [\" \", \"source\"])\n  \t|> yield()",
+          "refId": "Dynamic measurements - Total carbon emissions - sorted"
+        }
+      ],
+      "title": "Current C emissions / h [g CO2 eq / h]",
+      "transformations": [],
+      "type": "stat"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Carbon emissions",
+  "uid": "EQCVBCvVk",
+  "version": 1,
+  "weekStart": ""
+}

@@ -1,0 +1,1355 @@
+{
+  "_comment": "Copyright (c) 2022 Cisco and/or its affiliates. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0. Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. AUTHOR(s): Cristina Precup <cprecup@cisco.com> CONTRIBUTOR(s): Steven Barth <stbarth@cisco.com>, Philippe Tubello <ptubello@cisco.com>",
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 40,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 75,
+      "links": [],
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "# Bandwidth underutilization\r\n\r\nHigh bandwidth and low traffic can signal underutilization of interfaces and implicitly of the device. This can translate into energy waste due to powering the said interfaces.\r\n\r\nTo quantify the relation between traffic and power, we represent the PCR (Power consumption ratio).\r\nThis measurement shows the ratio between the rate of power and the rate of data per second. PCR answers the question: _How much power is used for 1 Gbps data rate?_\r\n\r\n<img src=\"https://render.githubusercontent.com/render/math?math=$PCR = \\frac{input\\_power\\_used}{[input | output\\_]data\\_rate} [\\frac{W}{Gbps}]$\"> \r\n\r\n_Note_: A PCR of value N/A signifies minimal traffic, i.e., < 100 Kbps.\r\n\r\n\r\nBelow you can find a list of devices with underutilized bandwidth and their corresponding PCR: the lower the utilization, the worse bandwidth consumption; the higher the PCR, the worse power consumption.\r\n\r\nAn **optimal scenario** from energy perspective represents **high bandwidth utilization** and a **low PCR**.",
+        "mode": "markdown"
+      },
+      "pluginVersion": "9.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "refId": "A"
+        }
+      ],
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 3,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "always",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "bandwidth_utilization"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "left"
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "bandwidth utilization"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "PCR"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "W/Gbps"
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "PCR"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.scaleDistribution",
+                "value": {
+                  "log": 10,
+                  "type": "log"
+                }
+              },
+              {
+                "id": "custom.fillBelowTo",
+                "value": "bandwidth_utilization"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 137,
+      "options": {
+        "legend": {
+          "calcs": ["lastNotNull"],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "query": "import \"generate\"\n\npower = 1000.0                              // W\nbps_to_kbps = 1000.0\nkbps_to_gbps = 1000000.0\nnumber_of_kbps = 10000                      // 10 Gbps\nnumber_of_gbps = 1000.0                     // 1 Tbps\nbandwidth = number_of_gbps * kbps_to_gbps   // unit: Kbps; 1000 Gbps = 1 Tbps\ngenerate.from(\n    // number of data points\n    count: 177,\n    // data rate of unit: Kbps; n * 10000 Kbps = n * 10 Gbps\n    fn: (n) => if n % 101 == 0 then number_of_kbps * int(v: bps_to_kbps) else n % 101 * number_of_kbps * int(v: bps_to_kbps),\n    start: -15m,\n    stop: -1s,\n)\n    |> map(fn: (r) => ({r with power: power}))\n    |> map(fn: (r) => ({r with bandwidth: bandwidth}))\n    |> map(fn: (r) => ({r with input_data_rate: float(v: r._value)}))\n    |> map(fn: (r) => ({r with bandwidth_utilization: r.input_data_rate / r.bandwidth}))\n    |> map(fn: (r) => ({r with PCR: r.power / (r.input_data_rate / kbps_to_gbps)}))\n    |> map(fn: (r) => ({r with source: \"Berlin-100\"}))\n    |> drop(columns: [\"_value\", \"bandwidth\", \"power\", \"input_data_rate\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Berlin-100",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "Interfaces administratively up / down of type: .*IFT_.*HUNDREDGE, .*IFT_.*FORTY or .*IFT_.*TEN.\nPCR:Wattage per Gbps for interfaces with administrative state up.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "source"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Device"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "bandwidth"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Bandwidth"
+              },
+              {
+                "id": "unit",
+                "value": "Kbits"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "input_data_rate"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Traffic"
+              },
+              {
+                "id": "unit",
+                "value": "Kbits"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "bandwidth_utilization"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Bandwidth utilization"
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "PCR"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "W/Gbps"
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "-1": {
+                        "index": 0,
+                        "text": "N/A"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 18,
+        "x": 0,
+        "y": 11
+      },
+      "id": 69,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Device"
+          }
+        ]
+      },
+      "pluginVersion": "9.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "import \"influxdata/influxdb/v1\"\r\nimport \"math\"\r\ntimeRange = -10m\r\ntimeInterval = 5m\r\n\r\n// Gather names of devices in a set\r\ndevices = from(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  |> filter(fn: (r) => \r\n  \tr._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/chassis\" and\r\n    (r._field == \"total_pwr_output\" or r._field == \"total_out_capacity\") and r._value > 0\r\n    )\r\n  // Trick to enforce grouping by same key of all devices\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    groupingkey: 1\r\n   }))\r\n  |> group(columns: [\"groupingkey\"])\r\n  |> unique(column: \"source\")\r\n  // Extract a set with the names of the devices\r\n  |> findColumn(fn: (key) => key.groupingkey == 1, column: \"source\")\r\n\r\nfrom(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  // Check that this device is in the list of devices that we are looking for\r\n  |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Cisco-IOS-XR-infra-statsd-oper:infra-statistics/interfaces/interface/total/data-rate\" or r[\"_measurement\"] == \"Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"bandwidth\" or r[\"_field\"] == \"input_data_rate\")\r\n  |> filter(fn: (r) =>  r.interface_name =~ /.*HundredGigE.*/ or r.interface_name =~ /.*FortyGigE.*/ or r.interface_name =~ /.*TenGigE.*/)\r\n  |> drop(columns: [\"path\", \"subscription\", \"_measurement\", \"host\"])\r\n\r\n  // Take the mean of bandwidth and input_data_rate\r\n  |> window(every: timeInterval)\r\n  |> mean()\r\n\r\n  // Reshape\r\n  |> duplicate(column: \"_start\", as: \"_time\")\r\n  |> drop(columns: [\"_start\", \"_stop\"])\r\n  |> last(column: \"_value\")\r\n  |> group(columns: [\"source\", \"_field\"])\r\n\r\n  // Take the sum of bandwidths and input_data_rate for each device\r\n  |> aggregateWindow(every: timeInterval, fn: sum)\r\n\r\n  // Reshape\r\n  |> drop(columns: [\"_start\", \"_stop\"])\r\n  |> truncateTimeColumn(unit: timeInterval)\r\n  |> last()\r\n  |> pivot(columnKey: [\"_field\"], rowKey: [\"_time\"], valueColumn: \"_value\")\r\n\r\n  // Consider only data that has bandwidth greater than 0 and fill missing values of traffic data with 0\r\n  |> filter(fn: (r) => r.bandwidth > 0)\r\n\r\n  // Compute bandwidth utilization [0-1]\r\n  |> map(fn: (r) => ({ r with bandwidth_utilization: float(v: r[\"input_data_rate\"]) / float(v: r[\"bandwidth\"])}))\r\n\r\n  |> drop(columns: [\"_time\"])\r\n  |> group()\r\n  |> sort(columns: [\"source\"], desc: true)\r\n  |> yield()",
+          "refId": "Bandwidth and Traffic"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "import \"influxdata/influxdb/v1\"\r\nimport \"math\"\r\n\r\ntimeRange = -10m\r\ntimeInterval = 5m\r\n\r\n// Gather names of devices in a set\r\ndevices = from(bucket: \"bucket1\")\r\n    |> range(start: timeRange)\r\n    |> filter(\r\n        fn: (r) => r.device_type != \"cisco-8k\" and r._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/chassis\" and r._field == \"total_pwr_output\" and r._value > 0,\r\n    )\r\n    // Trick to enforce grouping by same key of all devices\r\n    |> map(\r\n        fn: (r) => ({r with\r\n            groupingkey: 1,\r\n        }),\r\n    )\r\n    |> group(columns: [\"groupingkey\"])\r\n    |> unique(column: \"source\")\r\n    // Extract a set with the names of the devices\r\n    |> findColumn(fn: (key) => key.groupingkey == 1, column: \"source\")\r\ntype = from(bucket: \"bucket1\")\r\n    |> range(start: timeRange)\r\n    // Check that this device is in the list of devices that we are looking for\r\n    |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n    |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief\" and r._field == \"type\")\r\n    |> filter(fn: (r) => r._value =~ /.*IFT_.*HUNDREDGE.*/ or r._value =~ /.*IFT_.*FORTY.*/ or r._value =~ /.*IFT_.*TEN.*/)\r\n    |> drop(columns: [\"subscription\", \"host\", \"path\", \"_measurement\"])\r\n    |> map(\r\n        fn: (r) => ({r with\r\n            if_type: if r._field == \"type\" then\r\n                r._value\r\nelse\r\n                \"test\",\r\n        }),\r\n    )\r\n    |> group(columns: [\"interface_name\", \"source\"])\r\n    |> drop(columns: [\r\n        \"_start\",\r\n        \"_stop\",\r\n        \"_field\",\r\n        \"_time\",\r\n        \"_value\",\r\n    ])\r\n    |> distinct(column: \"if_type\")\r\nstate = from(bucket: \"bucket1\")\r\n    |> range(start: timeRange)\r\n    // Check that this device is in the list of devices that we are looking for\r\n    |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n    |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief\" and r._field == \"state\")\r\n    |> filter(fn: (r) => r._value =~ /.*up.*/)\r\n    |> drop(columns: [\"subscription\", \"host\", \"path\", \"_measurement\"])\r\n    |> map(\r\n        fn: (r) => ({r with\r\n            if_state: if r._field == \"state\" then\r\n                r._value\r\nelse\r\n                \"NA\",\r\n        }),\r\n    )\r\n    |> group(columns: [\"interface_name\", \"source\"])\r\n    |> drop(columns: [\"_start\", \"_stop\", \"_field\", \"_time\"])\r\n    |> last()\r\ninterfaces_up = join(\r\n    tables: {d1: state, d2: type},\r\n    on: [\"interface_name\", \"source\"],\r\n)\r\n    |> map(\r\n        fn: (r) => ({r with\r\n            if_state: r._value_d1,\r\n            if_type: r._value_d2,\r\n        }),\r\n    )\r\n    |> drop(columns: [\"_value_d1\", \"_value_d2\"])\r\n    |> group(columns: [\"type\"])\r\ninput_data_rate = from(bucket: \"bucket1\")\r\n    |> range(start: timeRange)\r\n    // Check that this device is in the list of devices that we are looking for\r\n    |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n    |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XR-infra-statsd-oper:infra-statistics/interfaces/interface/total/data-rate\")\r\n    |> filter(fn: (r) => r._field == \"input_data_rate\")\r\n    |> window(every: 1m)\r\n    // Samples of 30 seconds have points that contain only power_in_a or only data for PM0 or PM1. Therefore, aggregate data over 1m to bring them together\r\n    |> mean()\r\n    |> duplicate(column: \"_stop\", as: \"_time\")\r\n    |> window(every: 1m)\r\n    // Samples of 30 seconds have points that contain only power_in_a or only data for PM0 or PM1. Therefore, aggregate data over 1m to bring them together\r\n    |> mean()\r\n    |> duplicate(column: \"_start\", as: \"_time\")\r\n    |> truncateTimeColumn(unit: 1m)\r\n    |> keep(columns: [\"_time\", \"_value\", \"source\", \"interface_name\"])\r\ninput_data_rate_if_up = join(\r\n    tables: {d1: interfaces_up, d2: input_data_rate},\r\n    on: [\"interface_name\", \"source\"],\r\n)\r\n\r\n// Unit: 1000s bps\r\ntotal_input_data_rate = input_data_rate_if_up\r\n    |> group(columns: [\"_time\", \"source\"])\r\n    |> sum(column: \"_value\")\r\n    // Sum over all interfaces\r\n    |> group()\r\n    |> group(columns: [\"source\"])\r\ncount_interfaces = interfaces_up\r\n    |> keep(columns: [\"interface_name\", \"source\"])\r\n    |> group(columns: [\"source\"])\r\n    |> count(column: \"interface_name\")\r\n    |> map(fn: (r) => ({r with _value: r.interface_name}))\r\n    |> keep(columns: [\"_value\", \"source\"])\r\ntotal_power_router = from(bucket: \"bucket1\")\r\n    |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n    |> filter(\r\n        fn: (r) => r.device_type != \"cisco-8k\" and r._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/chassis\" and r._field == \"total_pwr_output\",\r\n    )\r\n    |> keep(columns: [\"_field\", \"_value\", \"_time\", \"source\"])\r\n    |> map(\r\n        fn: (r) => ({r with\r\n            _value: float(v: r._value) * 0.1 + float(v: r._value),\r\n        // Workaround: consider +10% of the output as input power\r\n        }),\r\n    )\r\n    |> group()\r\n    |> sort(columns: [\"_time\"], desc: true)\r\n    |> unique(column: \"source\")\r\n    |> sort(columns: [\"source\"], desc: true)\r\n    |> truncateTimeColumn(unit: 1m)\r\n    |> group(columns: [\"_time\", \"source\"])\r\n    |> group(columns: [\"source\"])\r\n\r\n// Average router power / total input data rate (for all interfaces)\r\n// Unit: VA/Gbps (1000s bps /1000000)\r\naverage_power_consumption_ratio = join(\r\n    tables: {t1: total_power_router, t2: total_input_data_rate},\r\n    on: [\"_time\", \"source\"],\r\n)\r\n    |> map(\r\n        fn: (r) => ({r with\r\n            _value: \r\n                // Mark unused everything that has data rate < 100 kbps\r\n                if r._value_t2 > 100 then\r\n                    float(v: r._value_t1) / (float(v: r._value_t2) / 1000000.0)\r\n                else\r\n                    -1.0,\r\n        // mark as ununsed if traffic < 100kbps\r\n        }),\r\n    )\r\n    |> keep(columns: [\"_value\", \"source\"])\r\n    |> last()\r\n    |> group()\r\n    |> rename(columns: {_value: \"PCR\"})\r\n    |> yield()",
+          "refId": "PCR"
+        }
+      ],
+      "title": "NCS 5xxL",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "_value": 4,
+              "bandwidth": 1,
+              "bandwidth_utilization": 3,
+              "input_data_rate": 2,
+              "source": 0
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "Interfaces administratively up / down of type: .*IFT_.*HUNDREDGE, .*IFT_.*FORTY or .*IFT_.*TEN.\nPCR:Wattage per Gbps for interfaces with administrative state up.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "color-text",
+            "inspect": false
+          },
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "source"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Device"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "bandwidth_utilization"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Bandwidth utilization"
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "text",
+                      "value": null
+                    },
+                    {
+                      "color": "green",
+                      "value": 0.5
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "bandwidth"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Bandwidth"
+              },
+              {
+                "id": "unit",
+                "value": "Kbits"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "input_data_rate"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Traffic"
+              },
+              {
+                "id": "unit",
+                "value": "Kbits"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "PCR"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "W/Gbps"
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "-1": {
+                        "color": "text",
+                        "index": 0,
+                        "text": "N/A"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "text",
+                      "value": 2
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 18,
+        "x": 0,
+        "y": 16
+      },
+      "id": 4,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Device"
+          }
+        ]
+      },
+      "pluginVersion": "9.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "query": "import \"math\"\r\nimport \"influxdata/influxdb/v1\"\r\ntimeRange = -10m\r\ntimeInterval = 5m\r\n\r\n// Gather names of devices in a set\r\ndevices = v1.measurementTagValues(\r\n  bucket: \"bucket1\",\r\n  measurement: \"Cisco-IOS-XR-sysadmin-fretta-envmon-ui:environment/oper/power/location/pem_attributes\",\r\n  tag: \"source\"\r\n)\r\n  // Trick to enforce grouping by same key of all devices\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    groupingkey: 1\r\n   }))\r\n  |> group(columns: [\"groupingkey\"])\r\n  // Extract a set with the names of the devices\r\n  |> findColumn(fn: (key) => key.groupingkey == 1, column: \"_value\")\r\n\r\nfrom(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  // Check that this device is in the list of devices that we are looking for\r\n  |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Cisco-IOS-XR-infra-statsd-oper:infra-statistics/interfaces/interface/total/data-rate\" or r[\"_measurement\"] == \"Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"bandwidth\" or r[\"_field\"] == \"input_data_rate\")\r\n  |> filter(fn: (r) =>  r.interface_name =~ /.*HundredGigE.*/ or r.interface_name =~ /.*FortyGigE.*/ or r.interface_name =~ /.*TenGigE.*/)\r\n  |> drop(columns: [\"path\", \"subscription\", \"_measurement\", \"host\"])\r\n\r\n  // Take the mean of bandwidth and input_data_rate\r\n  |> window(every: timeInterval)\r\n  |> mean()\r\n\r\n  // Reshape\r\n  |> duplicate(column: \"_start\", as: \"_time\")\r\n  |> drop(columns: [\"_start\", \"_stop\"])\r\n  |> last(column: \"_value\")\r\n  |> group(columns: [\"source\", \"_field\"])\r\n\r\n  // Take the sum of bandwidths and input_data_rate for each device\r\n  |> aggregateWindow(every: timeInterval, fn: sum)\r\n\r\n  // Reshape\r\n  |> drop(columns: [\"_start\", \"_stop\"])\r\n  |> truncateTimeColumn(unit: timeInterval)\r\n  |> last()\r\n  |> pivot(columnKey: [\"_field\"], rowKey: [\"_time\"], valueColumn: \"_value\")\r\n\r\n  // Consider only data that has bandwidth greater than 0 and fill missing values of traffic data with 0\r\n  |> filter(fn: (r) => r.bandwidth > 0)\r\n\r\n  // Compute bandwidth utilization [0-1]\r\n  |> map(fn: (r) => ({ r with bandwidth_utilization: float(v: r[\"input_data_rate\"]) / float(v: r[\"bandwidth\"])}))\r\n\r\n  |> drop(columns: [\"_time\"])\r\n  |> group()\r\n  |> sort(columns: [\"source\"], desc: true)",
+          "refId": "Bandwidth and Traffic"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "import \"math\"\r\nimport \"influxdata/influxdb/v1\"\r\ntimeRange = -10m\r\ntimeInterval = 5m\r\n\r\n// Gather names of devices in a set\r\ndevices = v1.measurementTagValues(\r\n  bucket: \"bucket1\",\r\n  measurement: \"Cisco-IOS-XR-sysadmin-fretta-envmon-ui:environment/oper/power/location/pem_attributes\",\r\n  tag: \"source\"\r\n)\r\n  // Trick to enforce grouping by same key of all devices\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    groupingkey: 1\r\n   }))\r\n  |> group(columns: [\"groupingkey\"])\r\n  // Extract a set with the names of the devices\r\n  |> findColumn(fn: (key) => key.groupingkey == 1, column: \"_value\")\r\n\r\ntype = from(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  // Check that this device is in the list of devices that we are looking for\r\n  |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n  |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief\" and r._field == \"type\")\r\n  |> filter(fn: (r) =>  r._value =~ /.*IFT_.*HUNDREDGE.*/ or r._value =~ /.*IFT_.*FORTY.*/ or r._value =~ /.*IFT_.*TEN.*/)\r\n  |> drop(columns: [\"subscription\", \"host\", \"path\", \"_measurement\"])\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    if_type: if r._field == \"type\" then r._value\r\n    else \"test\"\r\n   }))\r\n  |> group(columns: [\"interface_name\", \"source\"])\r\n  |> drop(columns: [\"_start\", \"_stop\", \"_field\", \"_time\", \"_value\"])\r\n  |> distinct(column: \"if_type\")\r\n\r\nstate = from(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  // Check that this device is in the list of devices that we are looking for\r\n  |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n  |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief\" and r._field == \"state\")\r\n  |> filter(fn: (r) => r._value =~ /.*up.*/)\r\n  |> drop(columns: [\"subscription\", \"host\", \"path\", \"_measurement\"])\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    if_state: if r._field == \"state\" then r._value\r\n    else \"NA\"\r\n   }))\r\n  |> group(columns: [\"interface_name\", \"source\"])\r\n  |> drop(columns: [\"_start\", \"_stop\",  \"_field\", \"_time\"])\r\n  |> last()\r\n \r\ninterfaces_up = join(\r\n\ttables: {d1: state, d2: type},\r\n    on: [\"interface_name\", \"source\"],\r\n  )\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    if_state: r._value_d1,\r\n    if_type: r._value_d2\r\n   }))\r\n  |> drop(columns: [\"_value_d1\", \"_value_d2\"])\r\n  |> group(columns: [\"type\"])\r\n\r\n\r\ninput_data_rate = from(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  // Check that this device is in the list of devices that we are looking for\r\n  |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n  |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XR-infra-statsd-oper:infra-statistics/interfaces/interface/total/data-rate\")\r\n  |> filter(fn: (r) => r._field == \"input_data_rate\")\r\n  |>last()\r\n  |> keep(columns: [\"_time\", \"_value\" \"source\", \"interface_name\"])\r\n\r\ninput_data_rate_if_up = join(\r\n\ttables: {d1: interfaces_up, d2: input_data_rate},\r\n    on: [\"interface_name\", \"source\"],\r\n)\r\n\r\n// Unit: 1000s bps (1kbps)\r\ntotal_input_data_rate = input_data_rate_if_up\r\n  |> group()\r\n  |> group(columns: [\"source\"])\r\n  |> sum()\r\n  |> keep(columns: [\"_time\", \"_value\" \"source\"])\r\n\r\ncount_interfaces = interfaces_up\r\n  |> keep(columns: [\"interface_name\", \"source\"])\r\n  |> group(columns: [\"source\"])\r\n  |> count(column: \"interface_name\")\r\n  |> map(fn: (r) => ({ r with _value: r.interface_name }))\r\n  |> keep(columns: [\"_value\", \"source\"])\r\n\r\n// POWER\r\n\r\nall = from(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  // Check that this device is in the list of devices that we are looking for\r\n  |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n  |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XR-sysadmin-fretta-envmon-ui:environment/oper/power/location/pem_attributes\")\r\n  |> filter(\r\n      fn: (r) => (r._field == \"system_power_input\" and \r\n          // NCS 55A2, NCS550x: chassis-level reading\r\n          r.location =~ /^[0-9]$/) or \r\n          //r._field == \"system_power_used\" // or\r\n          (r._field == \"power_consumed_value_int\" and \r\n              // NCS550x: LC-level reading\r\n              r.location =~ /^[0-9]\\/[0-9]$/\r\n              // Select only locations that are of the form 0/0, 0/1, 0/2, ..., 0/9 (corresponding to LCs)\r\n              ),\r\n  )\r\n  |> keep(\r\n      columns: [\r\n          \"_field\",\r\n          \"_value\",\r\n          \"_time\",\r\n          \"source\",\r\n          \"system_power_input\",\r\n          \"power_consumed_value_int\",\r\n          \"location\",\r\n      ],\r\n  )\r\n  |> map(fn: (r) => ({ r with _value: int(v: r._value) })) // Convert string to integers\r\n\r\n// Will add up the values for both LCs and chassis readings. This is wrong and has\r\n// to be corrected by later subtracting the router reading for the devices that\r\n// can directly provide readings per LCs.\r\n// There is no way to do it in a cleaner way (meaning, to separate the devices\r\n// that give the LC readings versus the chassis readings).\r\ntotal_power_router_PLUS_LCs = all\r\n  |> last()\r\n  |> group()\r\n  |> group(columns: [\"source\"])\r\n  |> sum()\r\n\r\ntotal_power_router = all\r\n  |> filter(fn: (r) =>\r\n        r._field == \"system_power_input\" and\r\n        r.location =~ /^[0-9]$/\r\n    )\r\n  |> keep(columns: [\"_field\", \"_value\", \"_time\", \"source\", \"system_power_input\", \"location\"])\r\n  |> last()\r\n  |> group()\r\n  |> group(columns: [\"source\"])\r\n  |> sum()\r\n\r\n// Power readings:\r\n// NCS 550x: at LC-level\r\n// NCS 55A2, NCS550x: at chassis-level\r\n// => final ones\r\n// NCS 550x: at LC-level\r\n// NCS 55A2: at chassis-level\r\ntotal_power_router_OR_LCs = join(\r\n\ttables: {d1: total_power_router_PLUS_LCs, d2: total_power_router},\r\n    on: [\"source\"],\r\n\t)\r\n  |> map(fn: (r) => ({\r\n    r with _value: // Check if there were both router and LCs added up. If so, remove the router reading.\r\n      if r._value_d1 > r._value_d2 then r._value_d1 - r._value_d2\r\n      else r._value_d1\r\n      })\r\n  )\r\n  |> keep(columns: [\"_value\", \"source\"])\r\n\r\n\r\n// Average router power / total input data rate (for all interfaces)\r\n// Unit: W/Gbps (1000s bps /1000000)\r\naverage_power_consumption_ratio = join(\r\n\ttables: {t1: total_power_router_OR_LCs, t2: total_input_data_rate},\r\n    on: [\"source\"],\r\n\t)\r\n    |> map(fn: (r) => ({\r\n    r with\r\n       _value:\r\n        // Mark unused everything that has data rate < 100 kbps\r\n        if r._value_t2 > 100 then float(v: r._value_t1) / (float(v: r._value_t2) / 1000000.0)\r\n        else -1.0, // mark as ununsed if traffic < 100kbps\r\n    \t_time: r._time_t1\r\n\t}))\r\n    |> keep(columns: [\"_value\", \"_time\", \"source\", \"subscription\", \"_measurement\"])\r\n    |> last()\r\n    |> group()\r\n    |> rename(columns: {_value: \"PCR\"})\r\n    |> yield()",
+          "refId": "PCR"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "import \"generate\"\n\npower = 1000.0\n\n// W\nbps_to_kbps = 1000.0\nkbps_to_gbps = 1000000.0\nnumber_of_kbps = 10000\n\n// 10 Gbps\nnumber_of_gbps = 1000.0\n\n// 1 Tbps\nbandwidth = number_of_gbps * kbps_to_gbps\n\n// unit: Kbps; 1000 Gbps = 1 Tbps\ngenerate.from(\n    count: 1,\n    fn: (n) => (n+1)*75 * number_of_kbps * int(v: bps_to_kbps),    // unit: Kbps; n * 10000 Kbps = n * 10 Gbps\n    start: -30m,\n    stop: -1s,\n)\n    |> map(fn: (r) => ({r with input_data_rate: float(v: r._value)}))\n    |> map(fn: (r) => ({r with bandwidth: bandwidth}))\n    |> map(fn: (r) => ({r with bandwidth_utilization: r.input_data_rate / r.bandwidth}))\n    |> map(fn: (r) => ({r with power: power}))\n    |> map(fn: (r) => ({r with PCR: r.power / (r.input_data_rate / kbps_to_gbps)}))\n    |> map(fn: (r) => ({r with source: \"Berlin-100\"}))\n    |> drop(columns: [\"_value\", \"_time\", \"power\"])",
+          "refId": "Generated data - Berlin-100"
+        }
+      ],
+      "title": "NCS 55xx / NCS 5xx",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "_value": 4,
+              "bandwidth": 1,
+              "bandwidth_utilization": 3,
+              "input_data_rate": 2,
+              "source": 0
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "Interfaces administratively up / down of type: .*IFT_.*HUNDREDGE, .*IFT_.*FORTY or .*IFT_.*TEN.\nPCR:Wattage per Gbps for interfaces with administrative state up.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          },
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "source"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Device"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "bandwidth_utilization"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Bandwidth utilization"
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "bandwidth"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Bandwidth"
+              },
+              {
+                "id": "unit",
+                "value": "Kbits"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "input_data_rate"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Traffic"
+              },
+              {
+                "id": "unit",
+                "value": "Kbits"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "PCR"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "W/Gbps"
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "-1": {
+                        "index": 0,
+                        "text": "N/A"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 18,
+        "x": 0,
+        "y": 27
+      },
+      "id": 72,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Device"
+          }
+        ]
+      },
+      "pluginVersion": "8.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "import \"math\"\r\nimport \"influxdata/influxdb/v1\"\r\ntimeRange = -10m\r\ntimeInterval = 5m\r\n\r\n// Gather names of devices in a set: ASR9Ks\r\ndevices = v1.measurementTagValues(\r\n  bucket: \"bucket1\",\r\n  measurement: \"Cisco-IOS-XR-sysadmin-asr9k-envmon-ui:environment/oper/power/location/pem_attributes\",\r\n  tag: \"source\"\r\n)\r\n  // Trick to enforce grouping by same key of all devices\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    groupingkey: 1\r\n   }))\r\n  |> group(columns: [\"groupingkey\"])\r\n  // Extract a set with the names of the devices\r\n  |> findColumn(fn: (key) => key.groupingkey == 1, column: \"_value\")\r\n\r\nfrom(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  // Check that this device is in the list of devices that we are looking for\r\n  |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Cisco-IOS-XR-infra-statsd-oper:infra-statistics/interfaces/interface/total/data-rate\" or r[\"_measurement\"] == \"Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"bandwidth\" or r[\"_field\"] == \"input_data_rate\")\r\n  |> filter(fn: (r) =>  r.interface_name =~ /.*HundredGigE.*/ or r.interface_name =~ /.*FortyGigE.*/ or r.interface_name =~ /.*TenGigE.*/)\r\n  |> drop(columns: [\"path\", \"subscription\", \"_measurement\", \"host\"])\r\n\r\n  // Take the mean of bandwidth and input_data_rate\r\n  |> window(every: timeInterval)\r\n  |> mean()\r\n\r\n  // Reshape\r\n  |> duplicate(column: \"_start\", as: \"_time\")\r\n  |> drop(columns: [\"_start\", \"_stop\"])\r\n  |> last(column: \"_value\")\r\n  |> group(columns: [\"source\", \"_field\"])\r\n\r\n  // Take the sum of bandwidths and input_data_rate for each device\r\n  |> aggregateWindow(every: timeInterval, fn: sum)\r\n\r\n  // Reshape\r\n  |> drop(columns: [\"_start\", \"_stop\"])\r\n  |> truncateTimeColumn(unit: timeInterval)\r\n  |> last()\r\n  |> pivot(columnKey: [\"_field\"], rowKey: [\"_time\"], valueColumn: \"_value\")\r\n\r\n  // Consider only data that has bandwidth greater than 0 and fill missing values of traffic data with 0\r\n  |> filter(fn: (r) => r.bandwidth > 0)\r\n\r\n  // Compute bandwidth utilization [0-1]\r\n  |> map(fn: (r) => ({ r with bandwidth_utilization: float(v: r[\"input_data_rate\"]) / float(v: r[\"bandwidth\"])}))\r\n\r\n  |> drop(columns: [\"_time\"])\r\n  |> group()\r\n  |> sort(columns: [\"source\"], desc: true)",
+          "refId": "Bandwidth and Traffic"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "import \"math\"\r\nimport \"influxdata/influxdb/v1\"\r\ntimeRange = -10m\r\ntimeInterval = 5m\r\n\r\n// Gather names of devices in a set: ASR9Ks\r\ndevices = v1.measurementTagValues(\r\n  bucket: \"bucket1\",\r\n  measurement: \"Cisco-IOS-XR-sysadmin-asr9k-envmon-ui:environment/oper/power/location/pem_attributes\",\r\n  tag: \"source\"\r\n)\r\n  // Trick to enforce grouping by same key of all devices\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    groupingkey: 1\r\n   }))\r\n  |> group(columns: [\"groupingkey\"])\r\n  // Extract a set with the names of the devices\r\n  |> findColumn(fn: (key) => key.groupingkey == 1, column: \"_value\")\r\n\r\ntype = from(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief\" and r._field == \"type\")\r\n  // Check that this device is in the list of devices that we are looking for\r\n  |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n  |> filter(fn: (r) =>  r._value =~ /.*IFT_.*HUNDREDGE.*/ or r._value =~ /.*IFT_.*FORTY.*/ or r._value =~ /.*IFT_.*TEN.*/)\r\n  |> drop(columns: [\"subscription\", \"host\", \"path\", \"_measurement\"])\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    if_type: if r._field == \"type\" then r._value\r\n    else \"test\"\r\n   }))\r\n  |> group(columns: [\"interface_name\", \"source\"])\r\n  |> drop(columns: [\"_start\", \"_stop\", \"_field\", \"_time\", \"_value\"])\r\n  |> distinct(column: \"if_type\")\r\n\r\nstate = from(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief\" and r._field == \"state\")\r\n  // Check that this device is in the list of devices that we are looking for\r\n  |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n  |> filter(fn: (r) => r._value =~ /.*up.*/)\r\n  |> drop(columns: [\"subscription\", \"host\", \"path\", \"_measurement\"])\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    if_state: if r._field == \"state\" then r._value\r\n    else \"NA\"\r\n   }))\r\n  |> group(columns: [\"interface_name\", \"source\"])\r\n  |> drop(columns: [\"_start\", \"_stop\",  \"_field\", \"_time\"])\r\n  |> last()\r\n \r\ninterfaces_up = join(\r\n\ttables: {d1: state, d2: type},\r\n    on: [\"interface_name\", \"source\"],\r\n  )\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    if_state: r._value_d1,\r\n    if_type: r._value_d2\r\n   }))\r\n  |> drop(columns: [\"_value_d1\", \"_value_d2\"])\r\n  |> group(columns: [\"type\"])\r\n\r\n\r\ninput_data_rate = from(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XR-infra-statsd-oper:infra-statistics/interfaces/interface/total/data-rate\")\r\n  // Check that this device is in the list of devices that we are looking for\r\n  |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n  |> filter(fn: (r) => r._field == \"input_data_rate\")\r\n  |>last()\r\n  |> keep(columns: [\"_time\", \"_value\" \"source\", \"interface_name\"])\r\n\r\ninput_data_rate_if_up = join(\r\n\ttables: {d1: interfaces_up, d2: input_data_rate},\r\n    on: [\"interface_name\", \"source\"],\r\n)\r\n\r\n// Unit: 1000s bps\r\ntotal_input_data_rate = input_data_rate_if_up\r\n  |> group()\r\n  |> group(columns: [\"source\"])\r\n  |> sum()\r\n  |> keep(columns: [\"_time\", \"_value\" \"source\"])\r\n\r\n\r\ncount_interfaces = interfaces_up\r\n  |> keep(columns: [\"interface_name\", \"source\"])\r\n  |> group(columns: [\"source\"])\r\n  |> count(column: \"interface_name\")\r\n  |> map(fn: (r) => ({ r with _value: r.interface_name }))\r\n  |> keep(columns: [\"_value\", \"source\"])\r\n\r\n// From Router level?\r\ntotal_power_router=from(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  |> filter(fn: (r) => \r\n  \tr._measurement == \"Cisco-IOS-XR-sysadmin-asr9k-envmon-ui:environment/oper/power/location/pem_attributes\" and \r\n    (r._field == \"system_power_input\")\r\n    )\r\n  // Check that this device is in the list of devices that we are looking for\r\n  |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n  |> keep(columns: [\"_field\", \"_value\", \"_time\", \"source\", \"system_power_input\"])\r\n  |> group()\r\n  |> sort(columns: [\"_time\"], desc: true)\r\n  |> unique(column: \"source\")\r\n\r\n// Average router power / total input data rate (for all interfaces)\r\n// Unit: W/Gbps (1000s bps /1000000)\r\naverage_power_consumption_ratio=join(\r\n\ttables: {t1: total_power_router, t2: total_input_data_rate},\r\n    on: [\"source\"],\r\n\t)\r\n    |> map(fn: (r) => ({\r\n    r with\r\n     _value:\r\n        // Mark unused everything that has data rate < 100 kbps\r\n        if r._value_t2 > 100 then float(v: r._value_t1) / (float(v: r._value_t2) / 1000000.0)\r\n        else -1.0, // mark as ununsed if traffic < 100kbps\r\n    \t_time: r._time_t1\r\n\t}))\r\n    |> keep(columns: [\"_value\", \"_time\", \"source\", \"subscription\", \"_measurement\"])\r\n    |> last()\r\n    |> group()\r\n    |> rename(columns: {_value: \"PCR\"})\r\n    |> yield()",
+          "refId": "PCR"
+        }
+      ],
+      "title": "ASR 9000",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "PCR": 4,
+              "bandwidth": 1,
+              "bandwidth_utilization": 3,
+              "input_data_rate": 2,
+              "source": 0
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "Interfaces administratively up / down of type: .*IFT_.*HUNDREDGE, .*IFT_.*FORTY or .*IFT_.*TEN.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          },
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "source"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Device"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "bandwidth_utilization"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Bandwidth utilization"
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "bandwidth"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Bandwidth"
+              },
+              {
+                "id": "unit",
+                "value": "Kbits"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "input_data_rate"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Traffic"
+              },
+              {
+                "id": "unit",
+                "value": "Kbits"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 18,
+        "x": 0,
+        "y": 36
+      },
+      "id": 73,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Device"
+          }
+        ]
+      },
+      "pluginVersion": "8.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "",
+          "refId": "A"
+        }
+      ],
+      "title": "ASR 9000 (32-bit)",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "Load": 1,
+              "source": 0
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "Interfaces administratively up / down of type: .*IFT_.*HUNDREDGE, .*IFT_.*FORTY or .*IFT_.*TEN.\nPCR:Wattage per Gbps for interfaces with administrative state up.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          },
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "source"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Device"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "bandwidth_utilization"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Bandwidth utilization"
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "bandwidth"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Bandwidth"
+              },
+              {
+                "id": "unit",
+                "value": "Kbits"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "input_data_rate"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Traffic"
+              },
+              {
+                "id": "unit",
+                "value": "Kbits"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "PCR"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "W/Gbps"
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "-1": {
+                        "index": 0,
+                        "text": "N/A"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 18,
+        "x": 0,
+        "y": 41
+      },
+      "id": 70,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Device"
+          }
+        ]
+      },
+      "pluginVersion": "8.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "query": "import \"influxdata/influxdb/v1\"\r\nimport \"math\"\r\ntimeRange = -10m\r\ntimeInterval = 5m\r\n\r\n// Gather names of devices in a set\r\ndevices = from(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  |> filter(fn: (r) => \r\n  \tr._measurement == \"Cisco-IOS-XR-invmgr-oper:inventory/entities/entity/attributes/inv-basic-bag\" \r\n    )\r\n  // Trick to enforce grouping by same key of all devices\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    groupingkey: 1\r\n   }))\r\n  |> group(columns: [\"groupingkey\"])\r\n  |> unique(column: \"source\")\r\n  // Extract a set with the names of the devices\r\n  |> findColumn(fn: (key) => key.groupingkey == 1, column: \"source\")\r\n\r\nfrom(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  // Check that this device is in the list of devices that we are looking for\r\n  |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Cisco-IOS-XR-infra-statsd-oper:infra-statistics/interfaces/interface/total/data-rate\" or r[\"_measurement\"] == \"Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"bandwidth\" or r[\"_field\"] == \"input_data_rate\")\r\n  |> filter(fn: (r) =>  r.interface_name =~ /.*HundredGigE.*/ or r.interface_name =~ /.*FortyGigE.*/ or r.interface_name =~ /.*TenGigE.*/)\r\n  |> drop(columns: [\"path\", \"subscription\", \"_measurement\", \"host\"])\r\n\r\n  // Take the mean of bandwidth and input_data_rate\r\n  |> window(every: timeInterval)\r\n  |> mean()\r\n\r\n  // Reshape\r\n  |> duplicate(column: \"_start\", as: \"_time\")\r\n  |> drop(columns: [\"_start\", \"_stop\"])\r\n  |> last(column: \"_value\")\r\n  |> group(columns: [\"source\", \"_field\"])\r\n\r\n  // Take the sum of bandwidths and input_data_rate for each device\r\n  |> aggregateWindow(every: timeInterval, fn: sum)\r\n\r\n  // Reshape\r\n  |> drop(columns: [\"_start\", \"_stop\"])\r\n  |> truncateTimeColumn(unit: timeInterval)\r\n  |> last()\r\n  |> pivot(columnKey: [\"_field\"], rowKey: [\"_time\"], valueColumn: \"_value\")\r\n\r\n  // Consider only data that has bandwidth greater than 0 and fill missing values of traffic data with 0\r\n  |> filter(fn: (r) => r.bandwidth > 0)\r\n\r\n  // Compute bandwidth utilization [0-1]\r\n  |> map(fn: (r) => ({ r with bandwidth_utilization: float(v: r[\"input_data_rate\"]) / float(v: r[\"bandwidth\"])}))\r\n\r\n  |> drop(columns: [\"_time\"])\r\n  |> group()\r\n  |> sort(columns: [\"source\"], desc: true)",
+          "refId": "Bandwidth and Traffic"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "import \"influxdata/influxdb/v1\"\r\nimport \"math\"\r\ntimeRange = -10m\r\ntimeInterval = 5m\r\n\r\n// Gather names of devices in a set\r\ndevices = from(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  |> filter(fn: (r) => \r\n  \tr._measurement == \"Cisco-IOS-XR-invmgr-oper:inventory/entities/entity/attributes/inv-basic-bag\" \r\n    )\r\n  // Trick to enforce grouping by same key of all devices\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    groupingkey: 1\r\n   }))\r\n  |> group(columns: [\"groupingkey\"])\r\n  |> unique(column: \"source\")\r\n  // Extract a set with the names of the devices\r\n  |> findColumn(fn: (key) => key.groupingkey == 1, column: \"source\")\r\n\r\ntype = from(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  // Check that this device is in the list of devices that we are looking for\r\n  |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n  |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief\" and r._field == \"type\")\r\n  |> filter(fn: (r) =>  r._value =~ /.*IFT_.*HUNDREDGE.*/ or r._value =~ /.*IFT_.*FORTY.*/ or r._value =~ /.*IFT_.*TEN.*/)\r\n  |> drop(columns: [\"subscription\", \"host\", \"path\", \"_measurement\"])\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    if_type: if r._field == \"type\" then r._value\r\n    else \"test\"\r\n   }))\r\n  |> group(columns: [\"interface_name\", \"source\"])\r\n  |> drop(columns: [\"_start\", \"_stop\", \"_field\", \"_time\", \"_value\"])\r\n  |> distinct(column: \"if_type\")\r\n\r\nstate = from(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  // Check that this device is in the list of devices that we are looking for\r\n  |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n  |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief\" and r._field == \"state\")\r\n  |> filter(fn: (r) => r._value =~ /.*up.*/)\r\n  |> drop(columns: [\"subscription\", \"host\", \"path\", \"_measurement\"])\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    if_state: if r._field == \"state\" then r._value\r\n    else \"NA\"\r\n   }))\r\n  |> group(columns: [\"interface_name\", \"source\"])\r\n  |> drop(columns: [\"_start\", \"_stop\",  \"_field\", \"_time\"])\r\n  |> last()\r\n \r\ninterfaces_up = join(\r\n\ttables: {d1: state, d2: type},\r\n    on: [\"interface_name\", \"source\"],\r\n  )\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    if_state: r._value_d1,\r\n    if_type: r._value_d2\r\n   }))\r\n  |> drop(columns: [\"_value_d1\", \"_value_d2\"])\r\n  |> group(columns: [\"type\"])\r\n\r\n\r\ninput_data_rate = from(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  // Check that this device is in the list of devices that we are looking for\r\n  |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n  |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XR-infra-statsd-oper:infra-statistics/interfaces/interface/total/data-rate\")\r\n  |> filter(fn: (r) => r._field == \"input_data_rate\")\r\n  |> window(every: 1m) // Samples of 30 seconds have points that contain only power_in_a or only data for PM0 or PM1. Therefore, aggregate data over 1m to bring them together\r\n  |> mean()\r\n  |> duplicate(column: \"_stop\", as: \"_time\")\r\n  |> window(every: 1m) // Samples of 30 seconds have points that contain only power_in_a or only data for PM0 or PM1. Therefore, aggregate data over 1m to bring them together\r\n  |> mean()\r\n  |> duplicate(column: \"_start\", as: \"_time\")\r\n  |> truncateTimeColumn(unit: 1m)\r\n  |> keep(columns: [\"_time\", \"_value\" \"source\", \"interface_name\"])\r\n\r\ninput_data_rate_if_up = join(\r\n\ttables: {d1: interfaces_up, d2: input_data_rate},\r\n    on: [\"interface_name\", \"source\"],\r\n)\r\n\r\n// Unit: 1000s bps\r\ntotal_input_data_rate = input_data_rate_if_up\r\n  |> group(columns: [\"_time\", \"source\"])\r\n  |> sum(column: \"_value\") // Sum over all interfaces\r\n  |> group()\r\n  |> group(columns: [\"source\"])\r\n\r\n\r\ncount_interfaces = interfaces_up\r\n  |> keep(columns: [\"interface_name\", \"source\"])\r\n  |> group(columns: [\"source\"])\r\n  |> count(column: \"interface_name\")\r\n  |> map(fn: (r) => ({ r with _value: r.interface_name }))\r\n  |> keep(columns: [\"_value\", \"source\"])\r\n\r\ntotal_power_router = from(bucket: \"bucket1\")\r\n  |> range(start: timeRange)\r\n  // Check that this device is in the list of devices that we are looking for\r\n  |> filter(fn: (r) => contains(value: r.source, set: devices))\r\n  |> filter(fn: (r) => \r\n    r._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/producers/producer-nodes/producer-node\" and \r\n    (\r\n    r._field == \"pem_info_array/current_in_a\" or\r\n    r._field == \"pem_info_array/voltage_in_a\" or \r\n    r._field == \"pem_info_array/current_in_b\" or\r\n    r._field == \"pem_info_array/voltage_in_b\"\r\n    )\r\n    and contains(value: r.source, set: devices))\r\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> rename(columns: {\"pem_info_array/voltage_in_a\": \"voltage_in_a\", \"pem_info_array/current_in_a\": \"current_in_a\", \"pem_info_array/voltage_in_b\": \"voltage_in_b\", \"pem_info_array/current_in_b\": \"current_in_b\"})\r\n\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    power_in_a: if float(v: r.current_in_a) > 100 then (float(v: r.voltage_in_a)/1000.0) * (float(v: r.current_in_a)/1000.0) else (float(v: r.voltage_in_a)) * (float(v: r.current_in_a)),\r\n    power_in_b: if float(v: r.current_in_b) > 100 then (float(v: r.voltage_in_b)/1000.0) * (float(v: r.current_in_b)/1000.0) else (float(v: r.voltage_in_b)) * (float(v: r.current_in_b)),\r\n   }))\r\n  |> map(fn: (r) => ({\r\n    r with\r\n    _value: r.power_in_a + r.power_in_b,\r\n  }))\r\n  |> window(every: 1m) // Samples of 30 seconds have points that contain only power_in_a or only data for PM0 or PM1. Therefore, aggregate data over 1m to bring them together\r\n  |> mean()\r\n  |> duplicate(column: \"_start\", as: \"_time\")\r\n  |> truncateTimeColumn(unit: 1m)\r\n  |> group(columns: [\"_time\", \"source\"])\r\n  |> sum(column: \"_value\") // Sum over all tags (e.g. the PM nodes)\r\n  |> group()\r\n  |> group(columns: [\"source\"])\r\n\r\n// Average router power / total input data rate (for all interfaces)\r\n// Unit: VA/Gbps (1000s bps /1000000)\r\naverage_power_consumption_ratio = join(\r\n\ttables: {t1: total_power_router, t2: total_input_data_rate},\r\n    on: [\"_time\", \"source\"],\r\n\t)\r\n    |> map(fn: (r) => ({\r\n    r with\r\n       _value:\r\n        // Mark unused everything that has data rate < 100 kbps\r\n        if r._value_t2 > 100 then float(v: r._value_t1) / (float(v: r._value_t2) / 1000000.0)\r\n        else -1.0, // mark as ununsed if traffic < 100kbps\r\n\t}))\r\n    |> keep(columns: [\"_value\", \"source\"])\r\n    |> last()\r\n    |> group()\r\n    |> rename(columns: {_value: \"PCR\"})\r\n    |> yield()",
+          "refId": "PCR"
+        }
+      ],
+      "title": "8000 series",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "PCR": 4,
+              "bandwidth": 1,
+              "bandwidth_utilization": 3,
+              "input_data_rate": 2,
+              "source": 0
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 46
+      },
+      "id": 9,
+      "panels": [],
+      "repeat": "Device",
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "${Device}",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "displayName": "${__field.labels.source} ${__field.labels.interface_name}",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 47
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "timeInterval = 5m\n\nfrom(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"source\"] == \"${Device}\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Cisco-IOS-XR-infra-statsd-oper:infra-statistics/interfaces/interface/total/data-rate\" or r[\"_measurement\"] == \"Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief\")\n  |> filter(fn: (r) => r[\"_field\"] == \"bandwidth\" or r[\"_field\"] == \"input_data_rate\")\n  |> filter(fn: (r) =>  r.interface_name =~ /.*HundredGigE.*/ or r.interface_name =~ /.*FortyGigE.*/ or r.interface_name =~ /.*TenGigE.*/)\n  |> drop(columns: [\"path\", \"subscription\", \"_measurement\", \"host\"])\n  |> truncateTimeColumn(unit: timeInterval)\n  |> pivot(columnKey: [\"_field\"], rowKey: [\"_time\"], valueColumn: \"_value\")\n  |> group()\n\n  // Consider only data that has bandwidth greater than 0 and fill missing values of traffic data with 0\n  |> filter(fn: (r) => r.bandwidth > 0)\n  //|> fill(column: \"input_data_rate\", value: 0)\n  // Compute bandwidth utilization [0-1]\n  |> map(fn: (r) => ({ r with bandwidth_utilization: float(v: r[\"input_data_rate\"]) / float(v: r[\"bandwidth\"])}))\n\n  // Aggregate data\n  |> group(columns: [\"source\", \"interface_name\"])\n  |> aggregateWindow(every: timeInterval, fn: last, column: \"bandwidth_utilization\", createEmpty: false)\n  |> drop(columns: [\"_start\", \"_stop\", \"bandwidth\", \"input_data_rate\"])\n  |> yield(name: \"last\")",
+          "refId": "A"
+        }
+      ],
+      "title": "Bandwidth utilization",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "displayName": "${__field.labels.source} ${__field.labels.interface_name}",
+          "mappings": [],
+          "unit": "Kbits"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 47
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": []
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "8.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "timeInterval = 5m\n\nfrom(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"source\"] == \"${Device}\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Cisco-IOS-XR-infra-statsd-oper:infra-statistics/interfaces/interface/total/data-rate\" or r[\"_measurement\"] == \"Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief\")\n  |> filter(fn: (r) => r[\"_field\"] == \"bandwidth\")\n  |> filter(fn: (r) =>  r.interface_name =~ /.*HundredGigE.*/ or r.interface_name =~ /.*FortyGigE.*/ or r.interface_name =~ /.*TenGigE.*/)\n  |> drop(columns: [\"path\", \"subscription\", \"_measurement\", \"host\"])\n  |> truncateTimeColumn(unit: timeInterval)\n  |> last()\n  |> drop(columns: [\"_start\", \"_stop\", \"_time\", \"_field\"])\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Bandwidth",
+      "transformations": [],
+      "type": "piechart"
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": ["All"],
+          "value": ["$__all"]
+        },
+        "datasource": {
+          "type": "influxdb",
+          "uid": "INFLUXDB2B082CADEA38E"
+        },
+        "definition": "import \"influxdata/influxdb/v1\"\n\nv1.measurementTagValues(\n  bucket: \"bucket1\",\n  measurement: \"Cisco-IOS-XR-infra-statsd-oper:infra-statistics/interfaces/interface/total/data-rate\",\n  tag: \"source\"\n)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "Device",
+        "options": [],
+        "query": "import \"influxdata/influxdb/v1\"\n\nv1.measurementTagValues(\n  bucket: \"bucket1\",\n  measurement: \"Cisco-IOS-XR-infra-statsd-oper:infra-statistics/interfaces/interface/total/data-rate\",\n  tag: \"source\"\n)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Bandwidth utilization",
+  "uid": "Kj_06Z94k",
+  "version": 1,
+  "weekStart": ""
+}

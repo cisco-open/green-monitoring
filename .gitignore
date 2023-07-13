@@ -1,0 +1,7 @@
+.idea
+*.DS_Store
+*.my
+*.mib.txt
+stack/influxdb/influxdb-data-etc/influx-configs
+stack/influxdb/influxdb-data-var/lib/influxdb2/engine
+stack/influxdb/influxdb-data-var/lib/influxdb2/influxd.bolt

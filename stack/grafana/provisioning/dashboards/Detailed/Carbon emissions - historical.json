@@ -1,0 +1,606 @@
+{
+  "_comment": "Copyright (c) 2022 Cisco and/or its affiliates. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0. Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. AUTHOR(s): Cristina Precup <cprecup@cisco.com> CONTRIBUTOR(s): Patrice Nivaggioli <pnivaggi@cisco.com>",
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 36,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 10,
+      "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Last 1d",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "At 1AM of next day shows the total of the previous day. Last value (for incomplete time window) is shown in the legend.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlPu"
+          },
+          "decimals": 3,
+          "displayName": "${__field.labels}",
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 1000
+              },
+              {
+                "color": "#EF843C",
+                "value": 1500
+              },
+              {
+                "color": "#E24D42",
+                "value": 2000
+              }
+            ]
+          },
+          "unit": "massg"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 33,
+      "interval": "1h",
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "9.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "import \"dict\"\nimport \"date\" //import library to add date functions\n\n//months = [1:\"January\",2:\"February\",3:\"March\",4:\"April\",5:\"May\",6:\"June\",7:\"July\",8:\"August\",9:\"September\",10:\"October\",11:\"November\",12: \"December\"]\n//days = [0:\"Sunday\", 1:\"Monday\", 2:\"Tuesday\", 3:\"Wednesday\", 4:\"Thursday\",5:\"Friday\", 6:\"Saturday\"]\n\ntimeIntervalkWh = 1h\ntimeInterval = 1h\ntimeRange = 25h\n\nsrc = from(bucket: \"bucket1\")\n  |> range(start: -timeRange)\n  |> filter(fn: (r) =>\n  r._measurement == \"Cisco-IOS-XR-sysadmin-fretta-envmon-ui:environment/oper/power/location/pem_attributes\" and\n  r._field == \"system_power_input\")\n  |> window(every: timeIntervalkWh)\n  |> mean()\n  |> duplicate(column: \"_start\", as: \"_time\")\n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: -timeRange)\n  |> filter(fn: (r) =>\n  \t  r._measurement == \"electricity-map\" and\n      r._field == \"carbonIntensity\")\n  |> drop(columns: [\"_measurement\"])\n  |> window(every: timeIntervalkWh)\n  |> mean()\n  |> duplicate(column: \"_start\", as: \"_time\")\n  |> drop(columns: [\"_measurement\"])\n  |> keep(columns: [\"_value\", \"_time\", \"cc\", \"country\", \"region\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\", \"_time\"],\n\t)\n  |> map(fn: (r) => ({\n    r with\n      //system_power_input: r._value_t1,\n      //carbonIntensity: r._value_t2,\n      region: r.region_t1,\n      country: r.country_t1,\n      _value: float(v: r._value_t1) * float(v: r._value_t2) / 1000.0,\n  }))\n  |> keep(columns: [\"_value\", \"_time\",\"source\"])\n  |> group()\n  |> aggregateWindow(every: timeInterval, fn: sum)\n  |> keep(columns: [\"_value\", \"_time\"])\n  |> map(fn: (r) => ({ r with //Valuemapping of monthnumber to monthname\n    namedHour: date.hour(t: r._time)\n  }))\n  |> keep(columns: [\"_value\", \"source\", \"namedHour\", \"_time\"])\n  |> group(columns: [\"namedHour\"])\n  |> first() // Trick to avoid double measurements from the last bucket\n  |> group()\n  |> sort(columns: [\"_time\"], desc: false)\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"namedHour\"], valueColumn: \"_value\") //formatting for Grafana\n  |> yield()",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "25h",
+      "title": "Last 24 hours",
+      "transformations": [],
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 3,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "massg"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Lyon-23"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Palinuro-29"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Picerno-58"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Ravello-51"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "8.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "// Look at last 26h because during the aggregations we lose 2 hrs.\n\nsrc = from(bucket: \"bucket1\")\n  |> range(start: -26h)\n  |> filter(fn: (r) =>\n  r._measurement == \"Cisco-IOS-XR-sysadmin-fretta-envmon-ui:environment/oper/power/location/pem_attributes\" and\n  r._field == \"system_power_input\")\n  |> window(every: 1h)\n  |> mean()\n  |> duplicate(column: \"_stop\", as: \"_time\")\n  |> keep(columns: [\"_value\", \"_time\",\"source\", \"cc\", \"country\", \"region\", \"measurement\"])\n  \n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: -26h)\n  |> filter(fn: (r) =>\n  \t  r._measurement == \"electricity-map\" and\n      r._field == \"carbonIntensity\")\n  |> window(every: 1h)\n  |> mean()\n  |> duplicate(column: \"_stop\", as: \"_time\")\n  |> drop(columns: [\"_measurement\"])\n  |> keep(columns: [\"_value\", \"_time\", \"cc\", \"country\", \"region\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\", \"_time\"],\n\t)\n    |> map(fn: (r) => ({\n    r with\n    \tregion: r.region_t1,\n    \tcountry: r.country_t1,\n      _value: float(v: r._value_t1) * float(v: r._value_t2) / 1000.0,\n\t}))\n    |> keep(columns: [\"_value\", \"_time\",\"source\"])\n    |> yield()",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "25h",
+      "title": "Last 24 h per device",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 12,
+      "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Last 1w",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "At 1AM of next day shows the total of the previous day. Last value (for incomplete time window) is shown in the legend.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlPu"
+          },
+          "decimals": 3,
+          "displayName": "${__field.labels}",
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 10000
+              },
+              {
+                "color": "#EF843C",
+                "value": 35000
+              },
+              {
+                "color": "#E24D42",
+                "value": 45000
+              }
+            ]
+          },
+          "unit": "massg"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 27,
+      "interval": "1h",
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "9.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "import \"dict\"\nimport \"date\"\n\ndays = [0:\"Sunday\", 1:\"Monday\", 2:\"Tuesday\", 3:\"Wednesday\", 4:\"Thursday\",5:\"Friday\", 6:\"Saturday\"]\n\ntimeIntervalkWh = 1h\ntimeInterval = 1d\ntimeRange = 8d\n\nsrc = from(bucket: \"bucket1\")\n  |> range(start: -timeRange)\n  |> filter(fn: (r) =>\n  r._measurement == \"Cisco-IOS-XR-sysadmin-fretta-envmon-ui:environment/oper/power/location/pem_attributes\" and\n  r._field == \"system_power_input\")\n  |> window(every: timeIntervalkWh)\n  |> mean()\n  |> duplicate(column: \"_start\", as: \"_time\")\n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: -timeRange)\n  |> filter(fn: (r) =>\n  \t  r._measurement == \"electricity-map\" and\n      r._field == \"carbonIntensity\")\n  |> window(every: timeIntervalkWh)\n  |> mean()\n  |> duplicate(column: \"_start\", as: \"_time\")\n  |> drop(columns: [\"_measurement\"])\n  |> keep(columns: [\"_value\", \"_time\", \"cc\", \"country\", \"region\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\", \"_time\"],\n\t)\n  |> map(fn: (r) => ({\n  r with\n    region: r.region_t1,\n    country: r.country_t1,\n    _value: float(v: r._value_t1) * float(v: r._value_t2) / 1000.0,\n}))\n  |> keep(columns: [\"_value\", \"_time\",\"source\"])\n  |> group()\n  |> aggregateWindow(every: timeInterval, fn: sum)\n  |> keep(columns: [\"_value\", \"_time\"])\n  |> timeShift(duration: -2h) // Influx calculates the previous day and sets the value to the next day at 1AM. Here, we want to go back 2hrs to be able to have the correct day name. Therefore, subtract by 2h (=> 23:00 of previous day will be the timestamp).\n  |> map(fn: (r) => ({ r with //Valuemapping of weeknumber to weekname\n    namedDay: dict.get(dict: days, key:date.weekDay(t: r._time), default: \"\")\n  }))\n  |> keep(columns: [\"_value\", \"source\", \"namedDay\", \"_time\"])\n  |> group(columns: [\"_time\", \"namedDay\"])\n  |> truncateTimeColumn(unit: 1d)\n  |> group()\n  |> range(start: -timeRange, stop: now()) // recalibrate the range\n  |> keep(columns: [\"_time\", \"_value\", \"namedDay\"])\n  |> pivot(rowKey: [], columnKey: [\"namedDay\", \"_time\"], valueColumn: \"_value\") //formatting for Grafana\n  |> yield()",
+          "refId": "D"
+        }
+      ],
+      "timeFrom": "7d",
+      "title": "Last 7 days",
+      "transformations": [],
+      "type": "bargauge"
+    },
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "id": 14,
+      "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Last 1mo",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "Month-wise: At 1AM of next day shows the total of the previous year. Last value (for incomplete time window) is shown in the legend. See: https://docs.influxdata.com/flux/v0.x/stdlib/universe/aggregatewindow/#calendar-months-and-years",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlPu"
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 100000
+              },
+              {
+                "color": "#EF843C",
+                "value": 200000
+              },
+              {
+                "color": "#E24D42",
+                "value": 300000
+              }
+            ]
+          },
+          "unit": "massg"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 34,
+      "interval": "1h",
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "9.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "import \"dict\"\nimport \"date\"\n\ntimeIntervalkWh = 1h\ntimeInterval = 1w\ntimeRange = 1mo\n\nsrc = from(bucket: \"bucket1\")\n  |> range(start: -timeRange)\n  |> filter(fn: (r) =>\n    r._measurement == \"Cisco-IOS-XR-sysadmin-fretta-envmon-ui:environment/oper/power/location/pem_attributes\" and\n    r._field == \"system_power_input\")\n  |> window(every: timeIntervalkWh)\n  |> mean()\n  |> duplicate(column: \"_start\", as: \"_time\")\n  |> keep(columns: [\"_value\", \"_time\",\"source\", \"cc\", \"country\", \"region\", \"measurement\"])\n  \n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: -timeRange)\n  |> filter(fn: (r) =>\n    r._measurement == \"electricity-map\" and\n    r._field == \"carbonIntensity\")\n  |> window(every: timeIntervalkWh)\n  |> mean()\n  |> duplicate(column: \"_start\", as: \"_time\")\n  |> drop(columns: [\"_measurement\"])\n  |> keep(columns: [\"_value\", \"_time\", \"cc\", \"country\", \"region\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\", \"_time\"],\n\t)\n  |> map(fn: (r) => ({\n    r with\n      region: r.region_t1,\n      country: r.country_t1,\n      _value: float(v: r._value_t1) * float(v: r._value_t2) / 1000.0,\n  }))\n  |> keep(columns: [\"_value\", \"_time\",\"source\"])\n  |> group()\n  |> aggregateWindow(every: timeInterval, fn: sum)\n  |> map(fn: (r) => ({\n    r with //Valuemapping of weeknumber\n    namedweek: date.week(t: r._time)\n  })) \n  |> keep(columns: [\"_value\", \"source\", \"namedweek\"])\n  |> group(columns: [\"namedweek\"])\n  |> group()\n  |> pivot(rowKey: [], columnKey: [\"namedweek\"], valueColumn: \"_value\") //formatting for Grafana\n  |> yield()",
+          "refId": "B"
+        }
+      ],
+      "timeFrom": "1M",
+      "title": "Last 1 mo",
+      "transformations": [],
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "id": 19,
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Last 1y",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "Month-wise: At 1AM of next day shows the total of the previous year. Last value (for incomplete time window) is shown in the legend. See: https://docs.influxdata.com/flux/v0.x/stdlib/universe/aggregatewindow/#calendar-months-and-years",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlPu"
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "#EAB839",
+                "value": 100000
+              },
+              {
+                "color": "#EF843C",
+                "value": 200000
+              },
+              {
+                "color": "#E24D42",
+                "value": 300000
+              }
+            ]
+          },
+          "unit": "massg"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      },
+      "id": 32,
+      "interval": "1h",
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["last"],
+          "fields": "",
+          "values": true
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "8.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "import \"dict\"\nimport \"date\"\n\nmonths = [1:\"January\",2:\"February\",3:\"March\",4:\"April\",5:\"May\",6:\"June\",7:\"July\",8:\"August\",9:\"September\",10:\"October\",11:\"November\",12: \"December\"]\n\nnumberHrsAggregationkWh = 6.0\ntimeIntervalkWh = duration(v: string(v: numberHrsAggregationkWh) + \"h\")\ntimeInterval = 30d\ntimeRange = 1y\n\nsrc = from(bucket: \"bucket1\")\n  |> range(start: -timeRange)\n  |> filter(fn: (r) =>\n    r._measurement == \"Cisco-IOS-XR-sysadmin-fretta-envmon-ui:environment/oper/power/location/pem_attributes\" and\n    r._field == \"system_power_input\")\n  |> window(every: timeIntervalkWh)\n  |> mean()\n  |> duplicate(column: \"_start\", as: \"_time\")\n  |> keep(columns: [\"_value\", \"_time\",\"source\", \"cc\", \"country\", \"region\", \"measurement\"])\n  \n\nco2eqkwh = from(bucket: \"bucket1\")\n  |> range(start: -timeRange)\n  |> filter(fn: (r) =>\n    r._measurement == \"electricity-map\" and\n    r._field == \"carbonIntensity\")\n  |> window(every: timeIntervalkWh)\n  |> mean()\n  |> duplicate(column: \"_start\", as: \"_time\")\n  |> drop(columns: [\"_measurement\"])\n  |> keep(columns: [\"_value\", \"_time\", \"cc\", \"country\", \"region\"])\n\nj = join(\n\ttables: {t1: src, t2: co2eqkwh},\n    on: [\"cc\", \"_time\"],\n\t)\n  |> map(fn: (r) => ({\n    r with\n      //system_power_input: r._value_t1,\n      //carbonIntensity: r._value_t2,\n      region: r.region_t1,\n      country: r.country_t1,\n      _value: float(v: r._value_t1) * numberHrsAggregationkWh * float(v: r._value_t2) / 1000.0,\n      //_time: r._time_t1\n  }))\n  |> keep(columns: [\"_value\", \"_time\",\"source\"])\n  |> group()\n  |> aggregateWindow(every: timeInterval, fn: sum)\n  |> map(fn: (r) => ({\n    r with //Valuemapping of monthnumber to monthname\n    namedMonth: dict.get(dict: months, key:date.month(t: r._time), default: \"\")\n  })) \n  |> keep(columns: [\"_value\", \"source\", \"namedMonth\"])\n  |> group(columns: [\"namedMonth\"])\n  |> group()\n  //|> pivot(rowKey: [], columnKey: [\"namedMonth\"], valueColumn: \"_value\") //formatting for Grafana\n  |> yield()",
+          "refId": "B"
+        }
+      ],
+      "timeFrom": "1y",
+      "title": "Last 1 year",
+      "transformations": [],
+      "type": "bargauge"
+    }
+  ],
+  "refresh": "5m",
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1m",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["5m", "15m", "30m", "1h", "1d", "1w"]
+  },
+  "timezone": "",
+  "title": "Carbon emissions - historical - Fretta",
+  "uid": "TqS6nVS4z",
+  "version": 1,
+  "weekStart": ""
+}

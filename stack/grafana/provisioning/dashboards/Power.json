@@ -1,0 +1,1852 @@
+{
+  "_comment": "Copyright (c) 2022 Cisco and/or its affiliates. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0. Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. AUTHOR(s): Cristina Precup <cprecup@cisco.com> CONTRIBUTOR(s): Patrice Nivaggioli <pnivaggi@cisco.com>, Steven Barth <stbarth@cisco.com>",
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 39,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 207,
+      "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Nexus 3K, 92xx, 93xx",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "${__field.labels.__values}",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 2000
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 36,
+        "w": 13,
+        "x": 0,
+        "y": 1
+      },
+      "id": 208,
+      "options": {
+        "displayMode": "lcd",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "text": {
+          "titleSize": 20
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n  \tr._measurement == \"show environment power\" and\n    (\n    r._field == \"powersup/power_summary/tot_pow_input_actual_draw\"\n    )\n    )\n  |> keep(columns: [\"_field\", \"_value\", \"_time\", \"source\"])\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "Sorted"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"apic-switch\")\n  |> filter(fn: (r) => r[\"_field\"] == \"pIn\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group(columns: [\"_time\", \"name\"])\n  |> keep(columns: [\"pIn\", \"name\", \"_time\"])\n  |> sum(column: \"pIn\")\n  |> group(columns: [\"name\"])\n  |> last(column: \"pIn\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"name\"], valueColumn: \"pIn\")",
+          "refId": "APIC - Special case: 93xx GX2B"
+        }
+      ],
+      "title": "Input power",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "${__field.labels.__values}",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 36,
+        "w": 3,
+        "x": 13,
+        "y": 1
+      },
+      "id": 209,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "text": {
+          "titleSize": 20,
+          "valueSize": 30
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => \n  \tr._measurement == \"show environment power\" and\n    (\n    r._field == \"powersup/power_summary/tot_pow_capacity\"\n    ))\n  |> keep(columns: [\"_field\", \"_value\", \"_time\", \"source\"])\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "Sorted"
+        }
+      ],
+      "title": "Required power",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "${__field.labels.__values}",
+          "mappings": [],
+          "max": 100,
+          "min": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 86
+              },
+              {
+                "color": "green",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 36,
+        "w": 3,
+        "x": 16,
+        "y": 1
+      },
+      "id": 210,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {
+          "valueSize": 20
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n  \tr._measurement == \"show environment power\" and \n    (\n    r._field == \"powersup/power_summary/tot_pow_input_actual_draw\" or \n    r._field == \"powersup/power_summary/tot_pow_out_actual_draw\"\n    ))\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({\n    r with\n    _value: (float(v: r[\"powersup/power_summary/tot_pow_out_actual_draw\"]) / float(v: r[\"powersup/power_summary/tot_pow_input_actual_draw\"])) * 100.0\n  }))\n  |> drop(columns: [\"powersup/power_summary/tot_pow_out_actual_draw\", \"powersup/power_summary/tot_pow_input_actual_draw\"])\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "pIn = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"apic-switch\")\n  |> filter(fn: (r) => r[\"_field\"] == \"pIn\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group(columns: [\"_time\", \"name\"])\n  |> keep(columns: [\"pIn\", \"name\", \"_time\"])\n  |> sum(column: \"pIn\")\n  |> group(columns: [\"name\"])\n  |> last(column: \"pIn\")\n\npOut = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"apic-switch\")\n  |> filter(fn: (r) => r[\"_field\"] == \"pOut\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group(columns: [\"_time\", \"name\"])\n  |> keep(columns: [\"pOut\", \"name\", \"_time\"])\n  |> sum(column: \"pOut\")\n  |> group(columns: [\"name\"])\n  |> last(column: \"pOut\")\n\nj = join(\n\ttables: {t1: pIn, t2: pOut},\n    on: [\"name\", \"_time\"],\n\t)\n  |> map(fn: (r) => ({\n    r with\n      _value: float(v: r.pOut) / float(v: r.pIn) * 100.0,\n  }))\n  |> keep(columns: [\"_value\", \"_time\", \"name\"])\n  |> yield()",
+          "refId": "APIC - Special case: 93xx GX2B"
+        }
+      ],
+      "title": "Power supply efficiency",
+      "transformations": [],
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "${__field.labels.__values}",
+          "mappings": [],
+          "max": 100,
+          "min": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 25
+              },
+              {
+                "color": "green",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 36,
+        "w": 3,
+        "x": 19,
+        "y": 1
+      },
+      "id": 211,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {
+          "valueSize": 20
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n  \tr._measurement == \"show environment power\" and \n    (\n    r._field == \"powersup/power_summary/tot_pow_capacity\" or \n    r._field == \"powersup/power_summary/tot_pow_out_actual_draw\"\n    ))\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({\n    r with\n    _value: (float(v: r[\"powersup/power_summary/tot_pow_out_actual_draw\"]) / float(v: r[\"powersup/power_summary/tot_pow_capacity\"])) * 100.0\n  }))\n  |> drop(columns: [\"powersup/power_summary/tot_pow_out_actual_draw\", \"powersup/power_summary/tot_pow_capacity\"])\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": true,
+          "query": "// TODO",
+          "refId": "APIC - Special case: 93xx GX2B"
+        }
+      ],
+      "title": "Power supply load",
+      "transformations": [],
+      "type": "gauge"
+    },
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 37
+      },
+      "id": 170,
+      "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "NCS5xx, NCS5xxx",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "${__field.labels.__values}",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 2000
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 34,
+        "w": 13,
+        "x": 0,
+        "y": 38
+      },
+      "id": 171,
+      "options": {
+        "displayMode": "lcd",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "text": {
+          "titleSize": 20
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n  \tr._measurement == \"Cisco-IOS-XR-sysadmin-fretta-envmon-ui:environment/oper/power/location/pem_attributes\" and\n    (\n    r._field == \"system_power_input\" //or \n    )\n    )\n  |> keep(columns: [\"_field\", \"_value\", \"_time\", \"source\"])\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "NCS5xx, NCS5xxx"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n    r.device_type != \"cisco-8k\" and\n  \tr._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/chassis\" and\n    r._field == \"total_pwr_output\"\n    )\n  |> keep(columns: [\"_field\", \"_value\", \"_time\", \"source\"])\n  |> map(fn: (r) => ({\n    r with\n    _value: (float(v: r._value) * 0.1 + float(v: r._value)) // Workaround: consider +10% of the output as input power\n   }))\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "NCS5xxL"
+        }
+      ],
+      "title": "Input power",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "${__field.labels.__values}",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 34,
+        "w": 3,
+        "x": 13,
+        "y": 38
+      },
+      "id": 172,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "text": {
+          "titleSize": 20,
+          "valueSize": 30
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => \n  \tr._measurement == \"Cisco-IOS-XR-sysadmin-fretta-envmon-ui:environment/oper/power/location/pem_attributes\" and\n    (\n    r._field == \"power_resrv_and_alloc\"\n    ))\n  |> keep(columns: [\"_field\", \"_value\", \"_time\", \"source\"])\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "NCS5xx, NCS5xxx"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n    r.device_type != \"cisco-8k\" and\n    r._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/chassis\" and \n    (\n    //r._field == \"total_pwr_input\" or\n    //r._field == \"total_pwr_output\" or\n    //r._field == \"total_output_capacity\" or\n    r._field == \"total_pwr_required\"\n    )\n    )\n  |> keep(columns: [\"_field\", \"_value\", \"_time\", \"source\"])\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: false)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "NCS5xxL"
+        }
+      ],
+      "title": "Required power",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red"
+              },
+              {
+                "color": "#EAB839",
+                "value": 86
+              },
+              {
+                "color": "green",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 34,
+        "w": 3,
+        "x": 16,
+        "y": 38
+      },
+      "id": 212,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {
+          "valueSize": 20
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n  \tr._measurement == \"Cisco-IOS-XR-sysadmin-fretta-envmon-ui:environment/oper/power/location/pem_attributes\" and\n    (\n    r._field == \"system_power_input\" or \n    r._field == \"system_power_used\"\n    )\n    )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.pem == \"0\" or r.pem == \"1\" or r.pem == \"3\")\n  |> filter(fn: (r) => r.system_power_input > 0)\n  |> filter(fn: (r) => r.system_power_used != 0)\n  |> map(fn: (r) => ({\n    r with\n    _value: (float(v: r.system_power_used) / float(v: r.system_power_input)) * 100.0\n   }))\n  |> drop(columns: [\"system_power_used\", \"system_power_input\"])\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "NCS5xx, NCS5xxx"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n    r.device_type != \"cisco-8k\" and\n  \tr._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/chassis\" and\n    r._field == \"total_pwr_output\" and r._value > 0\n    )\n  |> keep(columns: [\"_field\", \"_value\", \"_time\", \"source\"])\n  |> map(fn: (r) => ({\n    r with\n    _value: (float(v:r._value) / (float(v: r._value) * 0.1 + float(v: r._value))) * 100.0 // Workaround: consider +10% of the output as input power\n   }))\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "NCS5xxL"
+        }
+      ],
+      "title": "Power supply efficiency",
+      "transformations": [],
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red"
+              },
+              {
+                "color": "#EAB839",
+                "value": 25
+              },
+              {
+                "color": "green",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 34,
+        "w": 3,
+        "x": 19,
+        "y": 38
+      },
+      "id": 213,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {
+          "valueSize": 20
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n  \tr._measurement == \"Cisco-IOS-XR-sysadmin-fretta-envmon-ui:environment/oper/power/location/pem_attributes\" and \n    (\n    r._field == \"usable_power_capacity\" or \n    r._field == \"protection_power_capacity\" or\n    r._field == \"system_power_used\"\n    )\n    )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.pem == \"0\" or r.pem == \"1\" or r.pem == \"3\")\n  |> filter(fn: (r) => r.usable_power_capacity > 0 or r.protection_power_capacity > 0)\n  |> filter(fn: (r) => r.system_power_used != 0)\n  |> map(fn: (r) => ({\n    r with\n    _value: (float(v: r.system_power_used) / float(v: r.usable_power_capacity + r.protection_power_capacity)) * 100.0\n   }))\n  |> drop(columns: [\"system_power_used\", \"usable_power_capacity\", \"protection_power_capacity\"])\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "NCS5xx, NCS5xxx"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n    r.device_type != \"cisco-8k\" and\n  \tr._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/chassis\" and\n    (r._field == \"total_pwr_output\" or r._field == \"total_out_capacity\") and r._value > 0\n    )\n  |> keep(columns: [\"_field\", \"_value\", \"_time\", \"source\"])\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n   |> map(fn: (r) => ({\n    r with\n    _value: float(v: r.total_pwr_output) / float(v: r.total_out_capacity) * 100.0\n   }))\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")\n",
+          "refId": "NCS5xxL"
+        }
+      ],
+      "title": "Power supply load",
+      "transformations": [],
+      "type": "gauge"
+    },
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 72
+      },
+      "id": 4,
+      "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "ASR 9K",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 2000
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 21,
+        "w": 13,
+        "x": 0,
+        "y": 73
+      },
+      "id": 149,
+      "options": {
+        "displayMode": "lcd",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "text": {
+          "titleSize": 20
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n  \tr._measurement == \"Cisco-IOS-XR-sysadmin-asr9k-envmon-ui:environment/oper/power/location/pem_attributes\" and \n    (\n    r._field == \"system_power_input\"\n    )\n    )\n  |> keep(columns: [\"_field\", \"_value\", \"_time\", \"source\", \"system_power_input\"])\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "Sorted"
+        }
+      ],
+      "title": "Input power",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 21,
+        "w": 3,
+        "x": 13,
+        "y": 73
+      },
+      "id": 150,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "text": {
+          "titleSize": 20,
+          "valueSize": 30
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => \n  \tr._measurement == \"Cisco-IOS-XR-sysadmin-asr9k-envmon-ui:environment/oper/power/location/pem_attributes\" and \n    (\n    r._field == \"power_resrv_and_alloc\"\n    )\n    )\n  |> keep(columns: [\"_field\", \"_value\", \"_time\", \"source\"])\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "Sorted"
+        }
+      ],
+      "title": "Required power",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red"
+              },
+              {
+                "color": "#EAB839",
+                "value": 86
+              },
+              {
+                "color": "green",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 21,
+        "w": 3,
+        "x": 16,
+        "y": 73
+      },
+      "id": 155,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {
+          "valueSize": 20
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n  \tr._measurement == \"Cisco-IOS-XR-sysadmin-asr9k-envmon-ui:environment/oper/power/location/pem_attributes\" and \n    (\n    r._field == \"system_power_input\" or \n    r._field == \"system_power_used\"\n    )\n    )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.pem == \"0\" or r.pem == \"1\" or r.pem == \"3\")\n  |> map(fn: (r) => ({\n    r with\n    _value: (float(v: r.system_power_used) / float(v: r.system_power_input)) * 100.0\n  }))\n  |> drop(columns: [\"system_power_used\", \"system_power_input\", \"country\", \"region\"])\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "Sorted"
+        }
+      ],
+      "title": "Power supply efficiency",
+      "transformations": [],
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red"
+              },
+              {
+                "color": "#EAB839",
+                "value": 25
+              },
+              {
+                "color": "green",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 21,
+        "w": 3,
+        "x": 19,
+        "y": 73
+      },
+      "id": 214,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {
+          "valueSize": 20
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n  \tr._measurement == \"Cisco-IOS-XR-sysadmin-asr9k-envmon-ui:environment/oper/power/location/pem_attributes\" and \n    (\n    r._field == \"usable_power_capacity\" or \n    r._field == \"protection_power_capacity\" or \n    r._field == \"system_power_used\"\n    )\n    )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.pem == \"0\" or r.pem == \"1\" or r.pem == \"3\")\n  |> map(fn: (r) => ({\n    r with\n    _value: (float(v: r.system_power_used) / float(v: r.usable_power_capacity + r.protection_power_capacity)) * 100.0\n   }))\n  |> drop(columns: [\"system_power_used\", \"usable_power_capacity\", \"protection_power_capacity\", \"country\", \"region\"])\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: true)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "Sorted"
+        }
+      ],
+      "title": "Power supply load",
+      "transformations": [],
+      "type": "gauge"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 94
+      },
+      "id": 216,
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 2000
+                  }
+                ]
+              },
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 13,
+            "x": 0,
+            "y": 4
+          },
+          "id": 218,
+          "options": {
+            "displayMode": "lcd",
+            "minVizHeight": 10,
+            "minVizWidth": 0,
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true,
+            "text": {
+              "titleSize": 20
+            }
+          },
+          "pluginVersion": "9.2.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "INFLUXDB2B082CADEA38E"
+              },
+              "hide": false,
+              "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"asr9k_power\")\n  |> sort(columns: [\"_time\", \"source\"], desc: true)\n  |> unique(column: \"source\")\n  |> pivot(columnKey: [\"_field\"], rowKey: [\"source\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({r with \" \": (r.voltage1 * r.current1 + r.voltage2 * r.current2) / 1000000}))\n  |> keep(columns: [\"_time\", \" \", \"source\"])",
+              "refId": "Sorted"
+            }
+          ],
+          "title": "Input power",
+          "type": "bargauge"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              },
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 3,
+            "x": 13,
+            "y": 4
+          },
+          "id": 220,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "text": {
+              "titleSize": 20,
+              "valueSize": 30
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.2.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "INFLUXDB2B082CADEA38E"
+              },
+              "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"asr9k_power\")\n  |> sort(columns: [\"_time\", \"source\"], desc: true)\n  |> unique(column: \"source\")\n  |> pivot(columnKey: [\"_field\"], rowKey: [\"source\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({r with \" \": (r.capacity1 + r.capacity2)}))\n  |> keep(columns: [\"_time\", \" \", \"source\"])",
+              "refId": "Sorted"
+            }
+          ],
+          "title": "Required power",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "max": 100,
+              "min": 1,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red"
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 86
+                  },
+                  {
+                    "color": "green",
+                    "value": 90
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 3,
+            "x": 16,
+            "y": 4
+          },
+          "id": 222,
+          "options": {
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": false,
+            "text": {
+              "valueSize": 20
+            }
+          },
+          "pluginVersion": "9.2.0",
+          "repeatDirection": "v",
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "INFLUXDB2B082CADEA38E"
+              },
+              "refId": "A"
+            }
+          ],
+          "title": "Power supply efficiency",
+          "transformations": [],
+          "type": "gauge"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "displayName": "${__field.labels.source}",
+              "mappings": [],
+              "max": 100,
+              "min": 1,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red"
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 25
+                  },
+                  {
+                    "color": "green",
+                    "value": 50
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 3,
+            "x": 19,
+            "y": 4
+          },
+          "id": 224,
+          "options": {
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": false,
+            "text": {
+              "valueSize": 20
+            }
+          },
+          "pluginVersion": "9.2.0",
+          "repeatDirection": "v",
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "INFLUXDB2B082CADEA38E"
+              },
+              "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"asr9k_power\")\n  |> sort(columns: [\"_time\", \"source\"], desc: true)\n  |> unique(column: \"source\")\n  |> pivot(columnKey: [\"_field\"], rowKey: [\"source\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({r with \"capacity_power\": (r.capacity1 + r.capacity2)}))\n  |> map(fn: (r) => ({r with \"output_power\": (r.voltage1 * r.current1 + r.voltage2 * r.current2) / 1000000}))\n  |> keep(columns: [\"capacity_power\", \"output_power\", \"source\"])\n  |> map(fn: (r) => ({r with \"_value\": float(v: r.output_power) / float(v:r.capacity_power) * 100.0}))\n  |> keep(columns: [\"_time\", \"_value\", \"source\"])",
+              "refId": "A"
+            }
+          ],
+          "title": "Power supply load",
+          "transformations": [],
+          "type": "gauge"
+        }
+      ],
+      "title": "ASR 9K (32-bit)",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 95
+      },
+      "id": 34,
+      "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "C8K",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "Efficiency may be low if the power supply is at very low operation range (e.g. 100W for a 4kW power supply)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "${__field.labels.__values}",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 2000
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 13,
+        "x": 0,
+        "y": 96
+      },
+      "id": 187,
+      "options": {
+        "displayMode": "lcd",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "text": {
+          "titleSize": 20
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n    r.device_type == \"cisco-8k\" and\n    r._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/producers/producer-nodes/producer-node\" and \n    (\n    r._field == \"pem_info_array/current_in_a\" or\n    r._field == \"pem_info_array/voltage_in_a\" or \n    r._field == \"pem_info_array/current_in_b\" or\n    r._field == \"pem_info_array/voltage_in_b\"\n    ))\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> rename(columns: {\"pem_info_array/voltage_in_a\": \"voltage_in_a\", \"pem_info_array/current_in_a\": \"current_in_a\", \"pem_info_array/voltage_in_b\": \"voltage_in_b\", \"pem_info_array/current_in_b\": \"current_in_b\"})\n  |> map(fn: (r) => ({\n    r with\n    power_in_a: if float(v: r.current_in_a) > 100 then (float(v: r.voltage_in_a)/1000.0) * (float(v: r.current_in_a)/1000.0) else (float(v: r.voltage_in_a)) * (float(v: r.current_in_a)),\n    power_in_b: if float(v: r.current_in_b) > 100 then (float(v: r.voltage_in_b)/1000.0) * (float(v: r.current_in_b)/1000.0) else (float(v: r.voltage_in_b)) * (float(v: r.current_in_b)),\n   }))\n  |> map(fn: (r) => ({\n    r with\n    _value: r.power_in_a + r.power_in_b,\n  }))\n  |> last(column: \"_value\")\n  |> group(columns:[\"source\"])\n  |> keep(columns: [\"in_power\", \"_field\", \"_value\", \"source\"])\n  |> sum(column: \"_value\")\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"source\"], desc: false)\n  |> pivot(rowKey:[], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "Sorted"
+        }
+      ],
+      "title": "Input power",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "${__field.labels.__values}",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 3,
+        "x": 13,
+        "y": 96
+      },
+      "id": 191,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "text": {
+          "titleSize": 17,
+          "valueSize": 30
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n    r.device_type == \"cisco-8k\" and\n    r._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/chassis\" and \n    (\n    r._field == \"total_pwr_required\"\n    )\n    )\n  |> keep(columns: [\"_field\", \"_value\", \"_time\", \"source\"])\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: false)\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"source\"], valueColumn: \"_value\")",
+          "refId": "Sorted"
+        }
+      ],
+      "title": "Required power",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "${__field.labels}",
+          "mappings": [],
+          "max": 100,
+          "min": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red"
+              },
+              {
+                "color": "#EAB839",
+                "value": 85
+              },
+              {
+                "color": "green",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 3,
+        "x": 16,
+        "y": 96
+      },
+      "id": 189,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {
+          "valueSize": 20
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "power_in = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => \n    r.device_type == \"cisco-8k\" and\n    r._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/producers/producer-nodes/producer-node\" and \n    (\n    r._field == \"pem_info_array/current_in_a\" or\n    r._field == \"pem_info_array/voltage_in_a\" or \n    r._field == \"pem_info_array/current_in_b\" or\n    r._field == \"pem_info_array/voltage_in_b\"\n    )\n    )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> rename(columns: {\"pem_info_array/voltage_in_a\": \"voltage_in_a\", \"pem_info_array/current_in_a\": \"current_in_a\", \"pem_info_array/voltage_in_b\": \"voltage_in_b\", \"pem_info_array/current_in_b\": \"current_in_b\"})\n  |> map(fn: (r) => ({\n    r with\n    power_in_a: if float(v: r.current_in_a) > 100 then (float(v: r.voltage_in_a)/1000.0) * (float(v: r.current_in_a)/1000.0) else (float(v: r.voltage_in_a)) * (float(v: r.current_in_a)),\n    power_in_b: if float(v: r.current_in_b) > 100 then (float(v: r.voltage_in_b)/1000.0) * (float(v: r.current_in_b)/1000.0) else (float(v: r.voltage_in_b)) * (float(v: r.current_in_b)),\n   }))\n  |> map(fn: (r) => ({\n    r with\n    total_power_in: r.power_in_a + r.power_in_b,\n  }))\n  |> last(column: \"total_power_in\")\n  |> keep(columns: [\"total_power_in\", \"_field\", \"_value\", \"source\"])\n  |> reduce(fn: (r, accumulator) => ({ sum: float(v: r.total_power_in) + accumulator.sum }), identity: {sum: 0.0})\n\npower_out = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => \n    r._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/producers/producer-nodes/producer-node\" and \n    (\n    r._field == \"pem_info_array/voltage_out\" or\n    r._field == \"pem_info_array/current_out\"\n    )\n    )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> rename(columns: {\"pem_info_array/voltage_out\": \"voltage_out\", \"pem_info_array/current_out\": \"current_out\"})\n  |> keep(columns: [\"voltage_out\", \"current_out\", \"_field\", \"_value\", \"_time\", \"node\", \"name\", \"pem_info_array/node_name\", \"pem_info_array/node_type\", \"pem_info_array/node_status\", \"source\"])\n  |> map(fn: (r) => ({\n    r with\n    power_out: if float(v: r.current_out) > 100 then (float(v: r.voltage_out)/1000.0) * (float(v: r.current_out)/1000.0) else float(v: r.voltage_out)*float(v: r.current_out),\n   }))\n  |> last(column: \"power_out\")\n  |> keep(columns: [\"power_out\", \"_field\", \"_value\", \"_time\", \"source\"])\n  |> reduce(fn: (r, accumulator) => ({ sum: float(v: r.power_out) + accumulator.sum }), identity: {sum: 0.0})\n\njoin(\n\ttables: {d1: power_in, d2: power_out},\n    on: [\"source\"],\n)\n\n  |> map(fn: (r) => ({\n    r with\n    power_in: r.sum_d1,\n    power_out: r.sum_d2\n   }))\n  |> map(fn: (r) => ({\n    r with\n    power_eff: (r.power_out / r.power_in) * 100.0\n   }))\n  |> drop(columns: [\"sum_d1\", \"sum_d2\", \"power_in\", \"power_out\"])\n  |> group(columns: [\"source\"])\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: false)\n  |> pivot(rowKey:[], columnKey: [\"source\"], valueColumn: \"power_eff\")",
+          "refId": "Sorted"
+        }
+      ],
+      "title": "Power supply efficiency",
+      "transformations": [],
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "${__field.labels}",
+          "mappings": [],
+          "max": 100,
+          "min": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red"
+              },
+              {
+                "color": "#EAB839",
+                "value": 25
+              },
+              {
+                "color": "green",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 3,
+        "x": 19,
+        "y": 96
+      },
+      "id": 225,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {
+          "valueSize": 20
+        }
+      },
+      "pluginVersion": "9.2.0",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "power_capacity = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"Cisco-IOS-XR-invmgr-oper:inventory/entities/entity/attributes/inv-basic-bag\")\n  |> filter(fn: (r) => r[\"_field\"] == \"power_capacity\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> last(column: \"power_capacity\")\n  |> keep(columns: [\"power_capacity\", \"_field\", \"_value\", \"source\"])\n  |> reduce(fn: (r, accumulator) => ({ sum: float(v: r.power_capacity) + accumulator.sum }), identity: {sum: 0.0})\n\npower_out = from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => \n    r._measurement == \"Cisco-IOS-XR-envmon-oper:power-management/rack/producers/producer-nodes/producer-node\" and \n    (\n    r._field == \"pem_info_array/voltage_out\" or\n    r._field == \"pem_info_array/current_out\"\n    )\n    )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> rename(columns: {\"pem_info_array/voltage_out\": \"voltage_out\", \"pem_info_array/current_out\": \"current_out\"})\n  |> keep(columns: [\"voltage_out\", \"current_out\", \"_field\", \"_value\", \"_time\", \"node\", \"name\", \"pem_info_array/node_name\", \"pem_info_array/node_type\", \"pem_info_array/node_status\", \"source\"])\n  |> map(fn: (r) => ({\n    r with\n    power_out: if float(v: r.current_out) > 100 then (float(v: r.voltage_out)/1000.0) * (float(v: r.current_out)/1000.0) else float(v: r.voltage_out) * float(v: r.current_out),\n   }))\n  |> last(column: \"power_out\")\n  |> keep(columns: [\"power_out\", \"_field\", \"_value\", \"_time\", \"source\"])\n  |> reduce(fn: (r, accumulator) => ({ sum: float(v: r.power_out) + accumulator.sum }), identity: {sum: 0.0})\n\njoin(\n\ttables: {d1: power_capacity, d2: power_out},\n    on: [\"source\"],\n)\n\n  |> map(fn: (r) => ({\n    r with\n    power_capacity: r.sum_d1,\n    power_out: r.sum_d2\n   }))\n  |> map(fn: (r) => ({\n    r with\n    power_supply_load: (r.power_out / r.power_capacity) * 100.0\n   }))\n  |> drop(columns: [\"sum_d1\", \"sum_d2\", \"power_capacity\", \"power_out\"])\n  |> group(columns: [\"source\"])\n  // For sorting data (replaces |>last())\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> unique(column: \"source\")\n  |> sort(columns: [\"source\"], desc: false)\n  |> pivot(rowKey:[], columnKey: [\"source\"], valueColumn: \"power_supply_load\")",
+          "refId": "Sorted"
+        }
+      ],
+      "title": "Power supply load",
+      "transformations": [],
+      "type": "gauge"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 106
+      },
+      "id": 227,
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 2000
+                  }
+                ]
+              },
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 13,
+            "x": 0,
+            "y": 6
+          },
+          "id": 229,
+          "options": {
+            "displayMode": "lcd",
+            "minVizHeight": 10,
+            "minVizWidth": 0,
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true,
+            "text": {
+              "titleSize": 20
+            }
+          },
+          "pluginVersion": "9.2.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "INFLUXDB2B082CADEA38E"
+              },
+              "hide": false,
+              "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XE-environment-oper:environment-sensors/environment-sensor\" and r._field == \"current_reading\" and (r.name == \"PEM Iout\" or r.name == \"PEM Vout\"))\n  |> sort(columns: [\"_time\", \"source\"], desc: true)\n  |> unique(column: \"source\")\n  |> pivot(columnKey: [\"name\"], rowKey: [\"source\", \"location\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({r with \" \": (r[\"PEM Iout\"] * r[\"PEM Vout\"])}))\n  |> group(columns: [\"source\"])\n  |> sum(column: \" \")",
+              "refId": "Sorted"
+            }
+          ],
+          "title": "Input power",
+          "type": "bargauge"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              },
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 3,
+            "x": 13,
+            "y": 6
+          },
+          "id": 231,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "text": {
+              "titleSize": 20,
+              "valueSize": 30
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.2.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "INFLUXDB2B082CADEA38E"
+              },
+              "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"Cisco-IOS-XE-environment-oper:environment-sensors/environment-sensor\" and r._field == \"current_reading\" and (r.name == \"PEM Iout\" or r.name == \"PEM Vout\"))\n  |> sort(columns: [\"_time\", \"source\"], desc: true)\n  |> unique(column: \"source\")\n  |> pivot(columnKey: [\"name\"], rowKey: [\"source\", \"location\"], valueColumn: \"_value\")\n  |> group(columns: [\"source\"])\n  |> map(fn:(r) => ({r with \" \": int(v: r.maxpower)}))\n  |> sum(column: \" \")",
+              "refId": "Sorted"
+            }
+          ],
+          "title": "Required power",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "max": 100,
+              "min": 1,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red"
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 86
+                  },
+                  {
+                    "color": "green",
+                    "value": 90
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 3,
+            "x": 16,
+            "y": 6
+          },
+          "id": 233,
+          "options": {
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": false,
+            "text": {
+              "valueSize": 20
+            }
+          },
+          "pluginVersion": "9.2.0",
+          "repeatDirection": "v",
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "INFLUXDB2B082CADEA38E"
+              },
+              "refId": "A"
+            }
+          ],
+          "title": "Power supply efficiency",
+          "transformations": [],
+          "type": "gauge"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "max": 100,
+              "min": 1,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red"
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 25
+                  },
+                  {
+                    "color": "green",
+                    "value": 50
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 3,
+            "x": 19,
+            "y": 6
+          },
+          "id": 234,
+          "options": {
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": false,
+            "text": {
+              "valueSize": 20
+            }
+          },
+          "pluginVersion": "9.2.0",
+          "repeatDirection": "v",
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "INFLUXDB2B082CADEA38E"
+              },
+              "query": "",
+              "refId": "A"
+            }
+          ],
+          "title": "Power supply load",
+          "transformations": [],
+          "type": "gauge"
+        }
+      ],
+      "title": "ASR 9xx (IOS XE)",
+      "type": "row"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Power",
+  "uid": "y-CVLjvVk",
+  "version": 1,
+  "weekStart": ""
+}

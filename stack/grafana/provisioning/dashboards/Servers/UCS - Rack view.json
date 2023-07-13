@@ -1,0 +1,800 @@
+{
+  "_comment": "Copyright (c) 2022 Cisco and/or its affiliates. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0. Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. AUTHOR(s): Cristina Precup <cprecup@cisco.com> CONTRIBUTOR(s): Patrice Nivaggioli <pnivaggi@cisco.com>",
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "influxdb",
+          "uid": "INFLUXDB2B082CADEA38E"
+        },
+        "enable": false,
+        "iconColor": "red",
+        "mappings": {
+          "text": {
+            "source": "field",
+            "value": "_message"
+          }
+        },
+        "name": "UCSFrontTempStates",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "query": "import \"influxdata/influxdb/monitor\"\n\nmonitor.from(start: v.timeRangeStart, stop: v.timeRangeStop)\n\t|> monitor.stateChangesOnly()\n\t|> filter(fn: (r) =>\n\t\t(r._check_id == \"front_temperature\"))\n\t|> group(columns: [\"name\"])\n  |> filter(fn: (r) => r[\"_measurement\"] == \"statuses\")\n  |> filter(fn: (r) => r[\"_check_id\"] == \"front_temperature\")\n  |> filter(fn: (r) => r.rack == \"${rackforannotation}\" and r.name == \"${serverforannotation}\")\n  |> map(fn: (r) => ({r with _source_timestamp: time(v: r._source_timestamp)}))\n  |> keep(columns: [\"_source_timestamp\", \"name\", \"rack\", \"_message\", \"_level\"])\n  |> map(fn: (r) => ({r with _message: r._level + \": \" +  r.rack + \" -  \" + r.name + \": \" + r._message }))\n  |> keep(columns: [\"_source_timestamp\", \"_message\"])\n",
+          "tags": [],
+          "type": "dashboard"
+        }
+      },
+      {
+        "datasource": {
+          "type": "influxdb",
+          "uid": "INFLUXDB2B082CADEA38E"
+        },
+        "enable": true,
+        "iconColor": "red",
+        "name": "UCSRearTempStates",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "query": "import \"influxdata/influxdb/monitor\"\n\nmonitor.from(start: v.timeRangeStart, stop: v.timeRangeStop)\n\t|> monitor.stateChangesOnly()\n\t|> filter(fn: (r) =>\n\t\t(r._check_id == \"rear_temperature\"))\n\t|> group(columns: [\"name\"])\n  |> filter(fn: (r) => r[\"_measurement\"] == \"statuses\")\n  |> filter(fn: (r) => r[\"_check_id\"] == \"rear_temperature\")\n  |> filter(fn: (r) => r.rack == \"${rackforannotation}\" and r.name == \"${serverforannotation}\")\n  |> map(fn: (r) => ({r with _source_timestamp: time(v: r._source_timestamp)}))\n  |> keep(columns: [\"_source_timestamp\", \"name\", \"rack\", \"_message\", \"_level\"])\n  |> map(fn: (r) => ({r with _message: r._level + \": \" +  r.rack + \" -  \" + r.name + \": \" + r._message }))\n  |> keep(columns: [\"_source_timestamp\", \"_message\"])\n",
+          "tags": [],
+          "type": "dashboard"
+        }
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 32,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "9.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"cimc-ucs-power\" and r._field == \"current_power\" and r.domain == \"Platform\" and r.rack != \"NA\")\n  |> last()\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group(columns: [\"rack\"])\n  |> sum(column: \"current_power\")\n  |> group()",
+          "refId": "A"
+        }
+      ],
+      "title": "Power per rack",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "displayName": "${__field.labels.rack}",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "8.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"cimc-ucs-power\" and r._field == \"current_power\" and r.domain == \"Platform\" and r.rack != \"NA\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group(columns: [\"_time\", \"rack\"])\n  |> truncateTimeColumn(unit: 1h)\n  |> keep(columns: [\"current_power\", \"rack\", \"_time\"])\n  |> sum(column: \"current_power\")\n  |> group(columns: [\"rack\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Power per rack",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "C"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "celsius"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 3,
+      "maxPerRow": 2,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "overall_utilization"
+          }
+        ]
+      },
+      "pluginVersion": "9.2.0",
+      "repeat": "rack",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"cimc-ucs-power\" and r._field == \"current_power\" and r.domain == \"Platform\" and r.rack == \"${rack}\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> keep(columns: [\"name\", \"current_power\"])\n  |> unique(column: \"name\")\n  |> group(columns: [\"rack\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Servers in rack - ${rack} - Power",
+      "type": "table"
+    },
+    {
+      "cards": {},
+      "color": {
+        "cardColor": "#b4ff00",
+        "colorScale": "sqrt",
+        "colorScheme": "interpolateOranges",
+        "exponent": 0.5,
+        "mode": "spectrum"
+      },
+      "dataFormat": "timeseries",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "heatmap": {},
+      "hideZeroBuckets": false,
+      "highlightCards": true,
+      "id": 12,
+      "legend": {
+        "show": true
+      },
+      "maxPerRow": 2,
+      "pluginVersion": "8.3.0",
+      "repeat": "rack",
+      "repeatDirection": "h",
+      "reverseYBuckets": false,
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n      r._measurement == \"cimc-ucs-temperature\" and \n      (\n        //r._field == \"ambient_temp\" or\n        //r._field == \"front_temp\" or\n        r._field == \"rear_temp\"\n      )\n      and r.rack == \"${rack}\"\n    )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> keep(columns: [\"_time\", \"name\", \"ambient_temp\", \"front_temp\", \"rear_temp\"])\n  |> group(columns: [\"rack\"])",
+          "refId": "B"
+        }
+      ],
+      "title": "Servers in rack - ${rack} - Temperature rear",
+      "tooltip": {
+        "show": true,
+        "showHistogram": false
+      },
+      "type": "heatmap",
+      "xAxis": {
+        "show": true
+      },
+      "xBucketSize": "",
+      "yAxis": {
+        "format": "celsius",
+        "logBase": 1,
+        "show": true
+      },
+      "yBucketBound": "auto",
+      "yBucketNumber": 3
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      },
+      "id": 17,
+      "maxPerRow": 2,
+      "options": {
+        "legend": {
+          "calcs": ["last"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "8.3.0",
+      "repeat": "rack",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n      r._measurement == \"cimc-ucs-temperature\" and \n      (\n        r._field == \"front_temp\"\n      )\n      and r.rack == \"${rack}\"\n    )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({r with _value: r.front_temp}))\n  |> keep(columns: [\"name\", \"_value\", \"_time\", \"rack\"])\n",
+          "refId": "B"
+        }
+      ],
+      "title": "Servers in rack - ${rack} - Front temperature",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 46
+      },
+      "id": 23,
+      "maxPerRow": 2,
+      "options": {
+        "legend": {
+          "calcs": ["last"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "8.3.0",
+      "repeat": "rack",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n      r._measurement == \"cimc-ucs-temperature\" and \n      (\n        r._field == \"rear_temp\"\n      )\n      and r.rack == \"${rack}\"\n    )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({r with _value: r.rear_temp}))\n  |> keep(columns: [\"name\", \"_value\", \"_time\", \"rack\"])\n",
+          "refId": "B"
+        }
+      ],
+      "title": "Servers in rack - ${rack} - Rear temperature",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 57
+      },
+      "id": 7,
+      "maxPerRow": 2,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "overall_utilization"
+          }
+        ]
+      },
+      "pluginVersion": "8.3.0",
+      "repeat": "rack",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n      r._measurement == \"cimc-ucs-temperature\" and \n      (\n        r._field == \"ambient_temp\" or\n        r._field == \"front_temp\" or\n        r._field == \"rear_temp\"\n      )\n      and r.rack == \"${rack}\"\n    )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> keep(columns: [\"name\", \"ambient_temp\", \"front_temp\", \"rear_temp\"])\n  |> unique(column: \"name\")\n  |> group(columns: [\"rack\"])",
+          "refId": "B"
+        }
+      ],
+      "title": "Servers in rack - ${rack} - Temperature",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "INFLUXDB2B082CADEA38E"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 68
+      },
+      "id": 8,
+      "maxPerRow": 2,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "overall_utilization"
+          }
+        ]
+      },
+      "pluginVersion": "8.3.0",
+      "repeat": "rack",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "INFLUXDB2B082CADEA38E"
+          },
+          "hide": false,
+          "query": "from(bucket: \"bucket1\")\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) =>\n      r._measurement == \"cimc-ucs-utilization\" and \n      r._field == \"overall_utilization\" and r.rack == \"${rack}\"\n    )\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> keep(columns: [\"name\", \"overall_utilization\"])\n  |> unique(column: \"name\")\n  |> group(columns: [\"rack\"])",
+          "refId": "C"
+        }
+      ],
+      "title": "Servers in rack - ${rack} - Utilization",
+      "type": "table"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": {
+          "type": "influxdb",
+          "uid": "INFLUXDB2B082CADEA38E"
+        },
+        "definition": "import \"influxdata/influxdb/v1\"\n\nv1.measurementTagValues(\n  bucket: \"bucket1\",\n  measurement: \"cimc-ucs-power\",\n  tag: \"rack\"\n)",
+        "hide": 0,
+        "includeAll": false,
+        "multi": true,
+        "name": "rack",
+        "options": [],
+        "query": "import \"influxdata/influxdb/v1\"\n\nv1.measurementTagValues(\n  bucket: \"bucket1\",\n  measurement: \"cimc-ucs-power\",\n  tag: \"rack\"\n)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 5,
+        "type": "query"
+      },
+      {
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": {
+          "type": "influxdb",
+          "uid": "INFLUXDB2B082CADEA38E"
+        },
+        "definition": "import \"influxdata/influxdb/v1\"\n\nv1.measurementTagValues(\n  bucket: \"bucket1\",\n  measurement: \"cimc-ucs-power\",\n  tag: \"rack\"\n)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "rack_for_annotation",
+        "multi": false,
+        "name": "rackforannotation",
+        "options": [],
+        "query": "import \"influxdata/influxdb/v1\"\n\nv1.measurementTagValues(\n  bucket: \"bucket1\",\n  measurement: \"cimc-ucs-power\",\n  tag: \"rack\"\n)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 5,
+        "type": "query"
+      },
+      {
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": {
+          "type": "influxdb",
+          "uid": "INFLUXDB2B082CADEA38E"
+        },
+        "definition": "import \"influxdata/influxdb/v1\"\n\nv1.measurementTagValues(\n  bucket: \"bucket1\",\n  measurement: \"cimc-ucs-power\",\n  tag: \"name\"\n)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "server_for_annotation",
+        "multi": false,
+        "name": "serverforannotation",
+        "options": [],
+        "query": "import \"influxdata/influxdb/v1\"\n\nv1.measurementTagValues(\n  bucket: \"bucket1\",\n  measurement: \"cimc-ucs-power\",\n  tag: \"name\"\n)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 5,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "UCS - Rack view",
+  "uid": "GnpJaVI4z",
+  "version": 1,
+  "weekStart": ""
+}

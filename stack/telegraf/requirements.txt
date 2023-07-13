@@ -1,0 +1,6 @@
+pytz==2023.3
+raritan==20210223.0
+pyyaml==6.0
+imcsdk==0.9.12
+requests==2.31.0
+ucsmsdk==0.9.13
