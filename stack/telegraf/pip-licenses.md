@@ -7,7 +7,7 @@ $ pip-licenses --with-urls --with-system --format=markdown
 
 | Name               | Version    | License                              | URL                                          |
 |--------------------|------------|--------------------------------------|----------------------------------------------|
-| PyYAML             | 6.0        | MIT License                          | https://pyyaml.org/                          |
+| PyYAML             | 6.0.1        | MIT License                          | https://pyyaml.org/                          |
 | certifi            | 2022.12.7  | Mozilla Public License 2.0 (MPL 2.0) | https://github.com/certifi/python-certifi    |
 | charset-normalizer | 2.1.1      | MIT License                          | https://github.com/ousret/charset_normalizer |
 | idna               | 3.4        | BSD License                          | https://github.com/kjd/idna                  |
