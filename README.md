@@ -173,7 +173,14 @@ Distributed under the **Apache License Version 2.0**. See the [LICENSE](./LICENS
 
 ## Contact
 
-Cristina Precup - cprecup@cisco.com
+- Cristina Precup - cprecup@cisco.com
+- Guillaume Ladhuie - gladhuie@cisco.com
+- Jean-Baptiste Lefeuvre - jlefeuvr@cisco.com
+- Oren Brigg - obrigg@cisco.com
+- Patrice Nivaggioli - pnivaggi@cisco.com
+- Philippe Tubello - ptubello@cisco.com
+- Salvatore Faraone - sfaraone@cisco.com
+- Steven Barth - stbarth@cisco.com
 
 ## Acknowledgements
 
