@@ -6,6 +6,7 @@
     - [Container platform](#container-platform)
   - [Configuration](#configuration)
     - [IOS-XR routers and NX-OS switches](#ios-xr-routers-and-nx-os-switches)
+    - [Meraki switches](#meraki-switches)
     - [ACI APIC nodes](#aci-apic-nodes)
     - [UCSs](#ucss)
       - [REDFISH API](#redfish-api)
@@ -60,6 +61,9 @@ Configure environment and input data sources. Follow the format in the following
 - NX-OS switches - see:
   - [Configure telemetry streaming](#configure-telemetry-streaming)
   - [telegraf/telegraf.d/apic/get-switch-power.py](telegraf/telegraf.d/apic/get-switch-power.py) lines #12-#15
+- Meraki switches - see:
+  - [telegraf/telegraf.d/meraki/get-meraki-power.py](telegraf/telegraf.d/meraki/get-meraki-power.py)
+  - [telegraf/telegraf.d/telegraf-switch-meraki.conf](telegraf/telegraf.d/telegraf-switch-meraki.conf)
 - UCS servers - see:
   - [telegraf/telegraf.d/telegraf-redfish.conf](telegraf/telegraf.d/telegraf-redfish.conf)
   - [telegraf/telegraf.d/telegraf-ucs-cimc.conf](telegraf/telegraf.d/telegraf-ucs-cimc.conf)
@@ -121,6 +125,17 @@ Configure environment and input data sources. Follow the format in the following
    vi telegraf-mapping.conf
 
    # See sections of processors.enum
+   ```
+   ### Meraki switches
+   The collector uses the Meraki Python SDK to retrieve the data from the Meraki Dashboard API.
+
+   Configure API key and organization ID:
+   ```bash
+   vi meraki/get-meraki-power.py
+   # Replace with your API key
+    api_key = "sample-api-key"
+    # Replace with your organization ID
+    org_id = "sample-organization-id"
    ```
 
    ### ACI APIC nodes

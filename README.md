@@ -48,6 +48,7 @@ The data is collected from Network, DC (compute / storage) infrastructure, third
 Captures data from:
 - IOS-XR routers
 - NX-OS switches
+- Meraki switches
 - UCS servers
 - ACI APIC
 - Raritan PDUs
@@ -63,6 +64,7 @@ Data Flow:
 
     IOS-XR
     NX-OS
+    Meraki
     ACI APIC                   -> Telegraf     ->     InfluxDB     -> Grafana
     UCS: REDFISH/CIMC/UCSM
     Raritan PDUs
@@ -92,6 +94,9 @@ Access the two following WebUIs by replacing the `HOST_IP` placeholder with the 
 - [Influx](http://HOST_IP:8086) (_credentials based on [.env](./stack/.env)_) - for exploration of raw data.
 
 ### Dashboards
+
+Overview power - Meraki - organization/switches
+![Overview power - Meraki - organization/switches](stack/doc/img/overview%20power,%20carbon%20emissions/meraki.png)
 
 Overview power - DC - Nexus
 ![Overview power - DC - Nexus](stack/doc/img/overview%20power%2C%20carbon%20emissions/nexus.png)
