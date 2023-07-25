@@ -2,6 +2,7 @@
 - [Specifications](#specifications)
   - [Collections](#collections)
   - [Paths, class IDs, SNMP MIBs and YANG models](#paths-class-ids-snmp-mibs-and-yang-models)
+    - [Meraki](#meraki)
     - [REDFISH](#redfish)
       - [UCS](#ucs)
     - [CIMC: Class IDs](#cimc-class-ids)
@@ -34,6 +35,7 @@
 | NCS | [ncs-540.cfg](stack/mdt-config/ncs-540.cfg)<br> [ncs-50xx.cfg](stack/mdt-config/ncs-50xx.cfg)<br> [ncs-540L.cfg](stack/mdt-config/ncs-540L.cfg)<br> [ncs-560-er.cfg](stack/mdt-config/ncs-560-er.cfg) | Cisco-IOS-XR-sysadmin-fretta-envmon-ui:environment/oper/power/location/pem_attributes<br>  <br> Cisco-IOS-XR-envmon-oper:environmental-monitoring/rack/nodes/node/sensor-types/sensor-type/sensor-names/sensor-name <br> Cisco-IOS-XR-envmon-oper:power-management/rack/chassis <br> Cisco-IOS-XR-envmon-oper:power-management/rack/consumers/consumer-nodes/consumer-node <br> Cisco-IOS-XR-envmon-oper:power-management/rack/producers/producer-nodes/producer-node <br> <br>  Cisco-IOS-XR-sysadmin-uea-envmon-ui:environment/oper/power/location/pem_attributes <br> <br> \_Others:*<br> Cisco-IOS-XR-infra-statsd-oper:infra-statistics/interfaces/interface/total/data-rate _(bandwidth, traffic)_ <br> Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief _(interface states)_ | [telegraf-xr-and-nxos.conf](stack/telegraf/telegraf.d/telegraf-xr-and-nxos.conf) | 30-60-120s | [telegraf-mapping.conf](stack/telegraf/telegraf.d/telegraf-mapping.conf) | Power <br> Carbon emissions <br> Cost <br> Carbon emissions - historical - Fretta <br> Bandwidth Utilization |
 | ASR 9K | [asr-9903.cfg](stack/mdt-config/asr-9903.cfg) <br> [asr-9904.cfg](stack/mdt-config/asr-9904.cfg) | _Power:_ <br> Cisco-IOS-XR-sysadmin-asr9k-envmon-ui:environment/oper/power/location/pem*attributes <br> <br> \_Others:* <br> Cisco-IOS-XR-infra-statsd-oper:infra-statistics/interfaces/interface/total/data-rate _(bandwidth, traffic)_ <br> Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief _(interface states)_ | [telegraf-xr-and-nxos.conf](stack/telegraf/telegraf.d/telegraf-xr-and-nxos.conf) | 30s | [telegraf-mapping.conf](stack/telegraf/telegraf.d/telegraf-mapping.conf) | Power <br> Carbon emissions <br> Cost <br> Bandwidth Utilization |
 | Cisco 8K | [cisco-router-8201.cfg](stack/mdt-config/cisco-router-8201.cfg) | Cisco-IOS-XR-envmon-oper:environmental-monitoring/rack/nodes/node/sensor-types/sensor-type/sensor-names/sensor-name <br> Cisco-IOS-XR-envmon-oper:power-management/rack/chassis <br> Cisco-IOS-XR-envmon-oper:power-management/rack/consumers/consumer-nodes/consumer-node <br> Cisco-IOS-XR-envmon-oper:power-management/rack/producers/producer-nodes/producer-node <br> Cisco-IOS-XR-invmgr-oper:inventory/entities/entity/attributes/env-sensor-info <br> Cisco-IOS-XR-invmgr-oper:inventory/entities/entity/attributes/inv-basic-bag <br> <br> _Others:_<br> Cisco-IOS-XR-infra-statsd-oper:infra-statistics/interfaces/interface/total/data-rate _(bandwidth, traffic)_ <br> Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-briefs/interface-brief _(interface states)_ | [telegraf-xr-and-nxos.conf](stack/telegraf/telegraf.d/telegraf-xr-and-nxos.conf) | 30s | [telegraf-mapping.conf](stack/telegraf/telegraf.d/telegraf-mapping.conf) | Power <br> Carbon emissions <br> Cost <br> PCR versus Traffic <br> Bandwidth Utilization |
+| Meraki | | meraki-switch | [stack/telegraf/telegraf.d/meraki/get-meraki-power.py](stack/telegraf/telegraf.d/meraki/get-meraki-power.py) <br> [stack/telegraf/telegraf.d/telegraf-switch-meraki.conf](stack/telegraf/telegraf.d/telegraf-switch-meraki.conf) | 1h | [telegraf-mapping.conf](stack/telegraf/telegraf.d/telegraf-mapping.conf) | Meraki |
 | Nexus | [nexus9k-c9372px.cfg](stack/mdt-config/nexus9k-c9372px.cfg) | show environment power | [telegraf-xr-and-nxos.conf](stack/telegraf/telegraf.d/telegraf-xr-and-nxos.conf) | 30s | [telegraf-mapping.conf](stack/telegraf/telegraf.d/telegraf-mapping.conf) | Power <br> Carbon emissions <br> Cost <br> Cost - Nexus and UCS |
 | ACI APIC |  | apic-switch | [get-switch-power.py](stack/telegraf/telegraf.d/apic/get-switch-power.py) <br> [telegraf-switch-apic.conf](stack/telegraf/telegraf.d/telegraf-switch-apic.conf) | 3m | [telegraf-mapping.conf](stack/telegraf/telegraf.d/telegraf-mapping.conf) | Power <br> Carbon emissions <br> Cost |
 | UCS REDFISH |  | redfish_power_powersupplies <br> redfish_thermal_temperatures | [telegraf-redfish.conf](stack/telegraf/telegraf.d/telegraf-redfish.conf) | 60m | [telegraf-mapping.conf](stack/telegraf/telegraf.d/telegraf-mapping.conf) | Cost - UCS and Nexus |
@@ -50,6 +52,13 @@ The resources considered for power and temperature information are documented be
 _Note_: For sample device configuration of the IOS-XR, NX-OS devices, refer to [the configuration files located here](stack/mdt-config).
 
 _Note_: The elements highlighted in **bold** are those that have been used for the visualizations.
+
+### Meraki
+
+| Element | Operation ID |
+| :------------------ | :------------------ |
+| organization    | [getOrganizationSummaryTopSwitchesByEnergyUsage](https://developer.cisco.com/meraki/api-v1/get-organization-summary-top-switches-by-energy-usage) |
+| switch/port    | [getDeviceSwitchPortsStatuses](https://developer.cisco.com/meraki/api-v1/get-device-switch-ports-statuses) |
 
 ### REDFISH
 #### UCS

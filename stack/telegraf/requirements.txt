@@ -2,5 +2,6 @@ pytz==2023.3
 raritan==20210223.0
 pyyaml==6.0.1
 imcsdk==0.9.12
+meraki==1.34.0
 requests==2.31.0
 ucsmsdk==0.9.13
