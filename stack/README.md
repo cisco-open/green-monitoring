@@ -97,6 +97,7 @@ Configure environment and input data sources. Follow the format in the following
     HOST_IP=<enter IP address of host>
 
     # New token: Electricity Maps
+    # See https://api-portal.electricitymaps.com
     # EMAPS_TOKEN=<token>
     # or
     # Old token: CO2 Signal
