@@ -83,7 +83,7 @@ Configure environment and input data sources. Follow the format in the following
   - [telegraf/telegraf.d/get-co2eqkwh.py](telegraf/telegraf.d/get-co2eqkwh.py)
   - [telegraf/telegraf.d/telegraf-electricitymap.conf](telegraf/telegraf.d/telegraf-electricitymap.conf)
 
-1. Define the host IP (host where the containers are located), the proxy (if required), set credentials for InfluxDB, the proxy and, ideally, obtain a new CO2 Signal token from https://www.co2signal.com/.
+1. Define the host IP (host where the containers are located), the proxy (if required), set credentials for InfluxDB, the proxy and, ideally, obtain a token from [Electricity Maps](https://api-portal.electricitymaps.com) (_Note_: Support for CO2 Signal token from https://www.co2signal.com is deprecated).
 
     _Note_: InfluxDB token regeneration is needed when new credentials are used. To generate a new token, launch the InfluxDB service, access its UI at <HOST_IP>:8086 and follow these guidelines: https://docs.influxdata.com/influxdb/cloud/security/tokens/create-token.
 
@@ -95,6 +95,14 @@ Configure environment and input data sources. Follow the format in the following
     HTTPS_PROXY=
 
     HOST_IP=<enter IP address of host>
+
+    # New token: Electricity Maps
+    # See https://api-portal.electricitymaps.com
+    # EMAPS_TOKEN=<token>
+    # or
+    # Old token: CO2 Signal
+    # Deprecated, see https://www.co2signal.com.
+    CO2_SIGNAL_TOKEN=<token> 
 
     DOCKER_INFLUXDB_INIT_MODE=setup
     # 1. Authentication to db
@@ -261,9 +269,10 @@ Configure environment and input data sources. Follow the format in the following
     ```
 
    ### CO<sub>2</sub>-eq emissions
-   Customize countries for which to fetch the CO<sub>2</sub>-eq emissions data. See line #13 and subsequent lines in `get-co2eqkwh.py`
+   Customize countries for which to fetch the CO<sub>2</sub>-eq emissions data. See line #34 and lines #103-#119 in `get-co2eqkwh.py`
    ```bash
    countryCodes = ["DE", "ES", "FR", "IT-CNO", "IT-CSO", "IT-SO"]
+   [...]
    ```
 
 ### Telemetry streaming

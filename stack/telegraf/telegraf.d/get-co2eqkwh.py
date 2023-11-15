@@ -1,5 +1,5 @@
 #!/usr/bin/env python
- 
+
 """Script for retrieving CO2 emissions / kWh.
 
 Copyright (c) 2022 Cisco and/or its affiliates. All rights reserved.
@@ -23,62 +23,108 @@ __copyright__ = "Copyright (c) 2022 Cisco and/or its affiliates."
 __license__ = "Apache License, Version 2.0"
 
 import os
+import sys
 import pytz
 import json
 import time
+import logging as log
 from datetime import datetime
 import requests
 
-session = requests.Session()
+zones = ["DE", "ES", "FR", "IT-CNO", "IT-CSO", "IT-SO"]
+url_emaps = "https://api.electricitymap.org/v3/carbon-intensity/latest?zone="
+url_co2signal = "https://api.co2signal.com/v1/latest?countryCode="
 
-# Max 30 requests per hour
 
-collection = []
-countryCodes = ["DE", "ES", "FR", "IT-CNO", "IT-CSO", "IT-SO"]
-url = "https://api.co2signal.com/v1/latest?countryCode="
-headers = {'auth-token': os.environ['CO2_SIGNAL_TOKEN']}
+def read_emaps(js, zone, country, region):
+    # Check if data exists
+    if "carbonIntensity" not in js:
+        return None
 
-for cc in countryCodes:
-    response = session.get(url + cc, headers=headers)
+    return base_json_body(js, zone, country, region)
 
-    js = response.json()
 
-    if cc == "DE":
-        country = "Germany"
-        region = "Bavaria"
-    elif cc == "ES":
-        country = "Spain"
-        region = "Catalonia"
-    elif cc == "FR":
-        country = "France"
-        region = "Auvergne-Rhône-Alpes"
-    else:
-        country = "Italy"
-        if cc == "IT-CNO":
-            region = "Central North"
-        elif cc == "IT-CSO":
-            region = "Central South"
-        elif cc == "IT-SO":
-            region = "South"
+def read_co2_signal(js, zone, country, region):
+    # Check if data exists
+    if "data" not in js:
+        return None
 
-    if 'data' in js:
+    data = js["data"]
 
-        # Check if data exists:
-        if js['data']['fossilFuelPercentage']:
-            json_body = {
-                # Assume UTC timezone
-                'time': datetime.now().astimezone(pytz.utc).
-                                    strftime("%Y-%m-%dT%H:%M:%S.000Z"),
-                'acquired_time': js['data']['datetime'], # TODO
-                'cc': cc,
-                'country': country,
-                'region': region,
-                'unitCarbonIntensity': js['units']['carbonIntensity'],
-                'fossilFuelPercentage': js['data']['fossilFuelPercentage'],
-                'carbonIntensity': js['data']['carbonIntensity']
+    if data["carbonIntensity"]:
+        json_body = base_json_body(data, zone, country, region)
+        json_body.update(
+            {
+                "unitCarbonIntensity": js["units"]["carbonIntensity"],
+                "fossilFuelPercentage": data["fossilFuelPercentage"],
             }
+        )
+        return json_body
+    return None
 
-            collection.append(json_body)
-    time.sleep(1)
 
-print(json.dumps(collection))
+def base_json_body(data, zone, country, region):
+    return {
+        # Assume UTC timezone
+        "time": datetime.now().astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z"),
+        "acquired_time": data["datetime"],  # TODO
+        "cc": zone,
+        "country": country,
+        "region": region,
+        "carbonIntensity": data["carbonIntensity"],
+    }
+
+
+if __name__ == "__main__":
+
+    collection = []
+    session = requests.Session()
+
+    # Check if CO2_SIGNAL_TOKEN is set
+    if "CO2_SIGNAL_TOKEN" in os.environ:
+        headers = {"auth-token": os.environ["CO2_SIGNAL_TOKEN"]}
+        url = url_co2signal
+
+    # Check if EMAPS_TOKEN is set
+    if "EMAPS_TOKEN" in os.environ:
+        headers = {"auth-token": os.environ["EMAPS_TOKEN"]}
+        url = url_emaps
+
+    if "url" not in locals():
+        sys.exit("ERROR: Token not set.")
+
+    for zone in zones:
+        response = session.get(url + zone, headers=headers)
+        if response.status_code != 200:
+            log.warning(str(response.status_code) + ": " + response.text)
+            continue
+        js = response.json()
+
+        if zone == "DE":
+            country = "Germany"
+            region = "Bavaria"
+        elif zone == "ES":
+            country = "Spain"
+            region = "Catalonia"
+        elif zone == "FR":
+            country = "France"
+            region = "Auvergne-Rhône-Alpes"
+        else:
+            country = "Italy"
+            if zone == "IT-CNO":
+                region = "Central North"
+            elif zone == "IT-CSO":
+                region = "Central South"
+            elif zone == "IT-SO":
+                region = "South"
+
+        if url == url_co2signal:
+            # Get CO2 Signal data
+            collection.append(read_co2_signal(js, zone, country, region))
+        else:
+            # Get EMAPS data
+            collection.append(read_emaps(js, zone, country, region))
+
+        time.sleep(1)
+
+    print(json.dumps(collection))
