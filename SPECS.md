@@ -228,6 +228,6 @@ Additional fields introduced:
 
 This measurement shows the ratio between the rate of power and the rate of data per second, or, inversely, between the rate of data and the rate of power.
 
-<img src="https://render.githubusercontent.com/render/math?math=$PCR = \frac{input\_power\_used}{[input | output\_]data\_rate} [\frac{W}{Gbps}]$">
+$`PCR = \frac{input\_power\_used}{[input | output\_]data\_rate} [\frac{W}{Gbps}]`$
 
 Answers the question: _How much power is used for 1 Gbps data rate?_
