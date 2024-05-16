@@ -1,6 +1,7 @@
 # Green Monitoring Stack
 
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
+[![Build For Better 2024 Winner](https://static.production.devnetcloud.com/codeexchange/assets/images/DevNet-Build_For_Better_2024_Winner-Blue.svg)](https://blogs.cisco.com/developer/announcing-the-build-for-better-code-challenge-winners)
 
 
 ## Table of contents
