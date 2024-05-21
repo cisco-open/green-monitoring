@@ -3,5 +3,5 @@ raritan==20210223.0
 pyyaml==6.0.1
 imcsdk==0.9.12
 meraki==1.40.1
-requests==2.31.0
+requests==2.32.0
 ucsmsdk==0.9.13
